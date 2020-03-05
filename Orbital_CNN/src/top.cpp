@@ -1,212 +1,280 @@
-#include "nn-h/conv.h"
-#include "nn-h/pooling.h"
-#include "nn-h/util.h"
-#include "nn-h/activate.h"
-#include "nn-h/FcnnLayer.h"
+#include "../../nn-h/FcnnLayer.h"
+#include "../../nn-h/util.h"
+#include "../../nn-h/conv.h"
+#include "../../nn-h/pooling.h"
+#include "../../nn-h/conv_systolic.h"
 #include <ap_int.h>
 #include <hls_stream.h>
 
-struct ap_axis{
-	ap_int<512> data;
-	ap_int<1> last;
-	ap_int<64> keep;
-};
 
-template<unsigned StrSize>
-void AddLast(
-		hls::stream<ap_int<512> >& in,
-		hls::stream<ap_axis>& out
-){
-	ap_axis temp;
-	temp.keep = "0xffffffffffffffff";
-	for(unsigned i = 0;i < StrSize;i++){
+
+//struct ap_axis{
+//	ap_int<512> data;
+//	ap_int<1> last;
+//	ap_int<64> keep;
+//};
+//
+//template<unsigned StrSize>
+//void AddLast(
+//		hls::stream<ap_int<512> >& in,
+//		hls::stream<ap_axis>& out
+//){
+//	ap_axis temp;
+//	temp.keep = "0xffffffffffffffff";
+//	for(unsigned i = 0;i < StrSize;i++){
+//#pragma HLS PIPELINE II = 1
+//		temp.data = in.read();
+//		if(i == StrSize-1)
+//			temp.last = 1;
+//		else
+//			temp.last = 0;
+//		out.write(temp);
+//	}
+//}
+//
+//template<unsigned StrSize>
+//void DelHead(
+//		hls::stream<ap_axis>& in,
+//		hls::stream<ap_int<512> >& out
+//){
+//	ap_axis temp;
+//	for(unsigned i = 0;i < StrSize;i++){
+//#pragma HLS PIPELINE II = 1
+//		temp = in.read();
+//		out.write(temp.data);
+//		if(temp.last == 1)
+//			break;
+//	}
+//}
+//
+//
+//
+
+void top(ap_uint<4> activation[5][9],ap_int<8> weight[9][9],ap_int<12> o[5][9]){
+
+	ap_int<8> W[9][9];
+	ap_uint<4> A[4][9];
+	ap_int<12> O[4][9];
+#pragma HLS array_partition variable=W complete
+#pragma HLS array_partition variable=A complete
+#pragma HLS array_partition variable=O complete
+
+	for(int i = 0;i < 9;i++)
+#pragma HLS UNROLL
+		for(int j = 0;j < 9;j++)
+#pragma HLS UNROLL
+			W[i][j] = weight[i][(i+j)%9];
+
+	for(int i = 0;i < 4;i++)
+#pragma HLS UNROLL
+		for(int j = 0;j < 9;j++)
+#pragma HLS UNROLL
+			A[i][j] = activation[i][(i+j)%9];
+
+	for(int i = 0;i < 4;i++)
+#pragma HLS UNROLL
+		for(int j = 0;j < 9;j++)
+#pragma HLS UNROLL
+			O[i][j] = 0;
+
+	for(int i = 0;i < 9;i++){
 #pragma HLS PIPELINE II = 1
-		temp.data = in.read();
-		if(i == StrSize-1)
-			temp.last = 1;
-		else
-			temp.last = 0;
-		out.write(temp);
-	}
-}
-
-template<unsigned StrSize>
-void DelHead(
-		hls::stream<ap_axis>& in,
-		hls::stream<ap_int<512> >& out
-){
-	ap_axis temp;
-	for(unsigned i = 0;i < StrSize;i++){
-#pragma HLS PIPELINE II = 1
-		temp = in.read();
-		out.write(temp.data);
-		if(temp.last == 1)
-			break;
-	}
-}
-
-
-
-// Dot
-/*
-void top(ap_int<IBit1*Ksize1*Ksize1*InChannel1>& in,ap_int<MBit1*OutChannel1>& out){
-#pragma HLS INTERFACE ap_ovld both port=in
-#pragma HLS INTERFACE ap_ovld both port=out
-#pragma HLS DATAFLOW
-	const int P = InChannel1*Ksize1*Ksize1;
-	const int InBlockSize = IBit1*Ksize1*Ksize1*InChannel1;
-	ap_int<KBit1*P> DotWeight[OutChannel1] = {2,4,13,23,45,12,3,4,5,23,15,16,23,32,25,14};
-	ap_int<MBit1> OutSinglePix[OutChannel1];
-	ap_int<IBit1*Ksize1*Ksize1*InChannel1> in1[OutChannel1];
-	for(int l = 0; l < OutChannel1;l++){
+		for(int j = 0; j < 4; j++){
 #pragma HLS UNROLL
-		in1[l] = in;
-	}
-	for(int l = 0; l < OutChannel1;l++){
+			for(int k = 0; k < 9;k++){
 #pragma HLS UNROLL
-		OutSinglePix[l] = Dot<InChannel1*Ksize1*Ksize1,IBit1,KBit1,MBit1>(DotWeight[l],in1);
-	}
-
-	for(int q = 0; q < OutChannel1;q++){
-#pragma HLS UNROLL
-		out((q+1)*MBit1-1,q*MBit1) = OutSinglePix[q];
-	}
-}*/
-
-
-
-//#define GEMMSIZE 3
-
-//void aTop(hls::stream<ap_int<8> > &in,hls::stream<ap_int<8> > &out);
-//using namespace hls;
-
-/*
-void Gemm_(ap_int<8> weight[GEMMSIZE][GEMMSIZE],ap_int<8> activation[GEMMSIZE][GEMMSIZE],ap_int<8> o[GEMMSIZE][GEMMSIZE]){
-	ap_int<8> W[GEMMSIZE][GEMMSIZE],A[GEMMSIZE][GEMMSIZE],O[GEMMSIZE][GEMMSIZE];
-	for(int a = 0; a < GEMMSIZE; a++){
-#pragma HLS UNROLL
-		for(int b = 0; b < GEMMSIZE; b++){
-#pragma HLS UNROLL
-			O[a][b] = 0;
-			A[a][b] = activation[(a+b)%GEMMSIZE][b];
-			W[a][b] = weight[a][(a+b)%GEMMSIZE];
-		}
-	}
-	for(int i = 0;i < GEMMSIZE;i++){
-#pragma HLS PIPELINE II = 1
-		for(int j = 0; j < GEMMSIZE; j++){
-#pragma HLS UNROLL
-			for(int k = 0; k < GEMMSIZE;k++){
-#pragma HLS UNROLL
-				O[j][k] = O[j][k] + W[j][k] * A[j][k];
-				W[j][k] = W[j][(k+1)%GEMMSIZE];
-				A[j][k] = A[(j+1)%GEMMSIZE][j];
+				O[j][k] = O[j][k] + W[k][j] * A[j][k];
 			}
 		}
-	}
-	for(int c = 0; c < GEMMSIZE; c++){
+		for(int j = 0;j < 4;j++){
 #pragma HLS UNROLL
-		for(int d = 0; d < GEMMSIZE; d++){
+			ap_uint<4> ATemp = A[j][0];
+			for(int d = 0;d < 9-1;d++){
+#pragma HLS UNROLL
+				A[j][d] = A[j][d+1];
+			}
+			A[j][9-1] = ATemp;
+		}
+		for(int k = 0;k < 9;k++){
+			ap_int<8> WTemp = W[k][0];
+			for(int d = 0;d < 9-1;d++){
+#pragma HLS UNROLL
+				W[k][d] = W[k][d+1];
+			}
+			W[k][9-1] = WTemp;
+		}
+	}
+
+	for(int c = 0; c < 4; c++){
+#pragma HLS UNROLL
+		for(int d = 0; d < 9; d++){
 #pragma HLS UNROLL
 			o[c][d] = O[c][d];
 		}
 	}
-	return;
-}
-*/
 
-
-//ap_int<8> k1_8[9] = {1,2,3,4,5,6,7,8,9};
-//ap_int<8> k2[9] = {3,2,1,6,5,4,9,8,7};
-ap_int<32> k1_32[9] = {1,2,3,4,5,6,7,8,9};
-ap_int<32> k2_32[9] = {1,2,3,4,5,1,7,8,9};
-ap_int<32> k3_32[9] = {1,2,3,4,5,4,7,8,9};
-ap_int<32> k4_32[9] = {1,2,3,4,5,4,7,8,9};
-double k1_d[9] = {1.2,2.3,3.4,4.5,5.6,6.7,7.8,8.9,9.0};
-double k2_d[9] = {1.2,2.3,3.4,4.5,5.6,6.7,7.8,8.9,9.0};
-double k3_d[9] = {1.2,2.3,3.4,4.5,5.6,6.7,7.8,8.9,9.0};
-double k4_d[9] = {1.2,2.3,3.4,4.5,5.6,6.7,7.8,8.9,9.0};
-/*
-void four2one(stream<ap_int<8> >& in1,stream<ap_int<8> >& in2,stream<ap_int<8> >& in3,stream<ap_int<8> >& in4,stream<ap_int<32> >& out){
-	for(int j = 0;j < 48*64;j++){
-		ap_int<8> m1 = in1.read();
-		ap_int<8> m2 = in2.read();
-		ap_int<8> m3 = in3.read();
-		ap_int<8> m4 = in4.read();
-		ap_int<32> outm = m1+(m2<<8)+(m3<<16)+(m4<<24);
-		out.write(outm);
-	}
 }
 
-void one2four(stream<ap_int<8> >& out1,stream<ap_int<8> >& out2,stream<ap_int<8> >& out3,stream<ap_int<8> >& out4,stream<ap_int<32> >& in){
-	for(int i = 0;i < 48*64;i++){
-		ap_int<32> num = in.read();
-		ap_int<8> n1 = num%256;
-		ap_int<8> n2 = (num>>8)%256;
-		ap_int<8> n3 = (num>>16)%256;
-		ap_int<8> n4 = (num>>24)%256;
-		out1.write(n1);
-		out2.write(n2);
-		out3.write(n3);){
-		out4.write(n4);
-	}
-}*/
-
-/*
-void aTop(stream<ap_int<32> > &in,stream<ap_int<32> > &out){
-#pragma HLS DATAFLOW
-	stream<ap_int<8> > in1("in1");
-	stream<ap_int<8> > in2("in2");
-	stream<ap_int<8> > in3("in3");
-	stream<ap_int<8> > in4("in4");
-	stream<ap_int<8> > out1("out1");
-	stream<ap_int<8> > out2("out2");
-	stream<ap_int<8> > out3("out3");
-	stream<ap_int<8> > out4("out4");
-
-	one2four(in1,in2,in3,in4,in);
-	Conv_Top<3,1,8,8,8,8,8,48,64> (in1,out1,k1);
-	Conv_Top<3,1,8,8,8,8,8,48,64> (in2,out2,k1);
-	Conv_Top<3,1,8,8,8,8,8,48,64> (in3,out3,k1);
-	Conv_Top<3,1,8,8,8,8,8,48,64> (in4,out4,k1);
-	four2one(out1,out2,out3,out4,out);
-
-	return;
-}
-*/
-
-/*
-void top(hls::stream<double >& in,hls::stream<double > &out){
-#pragma HLS DATAFLOW
-
-	hls::stream<ap_int<32> > temp1,temp2,temp3,temp4;
-	hls::stream<ap_int<32> > temp5,temp7,temp6,temp8;
-	hls::stream<ap_int<32> > tempo1,tempo2,tempo3,tempo4;
-	StrExt4Str<32,3072>(in,temp5,temp6,temp7,temp8);
-	Conv_N<3,1,32,32,32,32,48,64> (temp5,temp1,k1_32);
-	Conv_N<3,1,32,32,32,32,48,64> (temp6,temp2,k2_32);
-	Conv_N<3,1,32,32,32,32,48,64> (temp7,temp3,k3_32);
-	Conv_N<3,1,32,32,32,32,48,64> (temp8,temp4,k4_32);
-	MaxPooling_Str<2,32,46,62>(temp1,tempo1);
-	MaxPooling_Str<2,32,46,62>(temp2,tempo2);
-	MaxPooling_Str<2,32,46,62>(temp3,tempo3);		   	   	   	   	   	   	   	   	   	   	   	   	   	   	   {{1,2,3,4,5,6,7,8,9},{1,2,3,4,5,6,7,8,9},{1,2,3,4,5,6,7,8,9}},\
-
-	MaxPooling_Str<2,32,46,62and MobileNet, with the right mix
-of 1-, 2- and 3-bit parameters that average to just 1.4 bits can equal the accuracy
-of homogeneous 2-bit versions of these networks. Further, we provide analyses
-to show that the heterogeneously binarized systems yield FPGA- and ASIC-based
-implementations that are correspondingly more efficient i>(temp4,tempo4);
-	for(int i = 0;i < 46;i++){
-		for(int j = 0;j < 62;j++){
-			ap_int<32> T1 = tempo1.read();
-			ap_int<32> T2 = tempo2.read();
-			ap_int<32> T3 = tempo3.read();
-			ap_int<32> T4 = tempo4.read();
-			ap_int<32> T = T1+T2+T3+T4;
-			out.write(T);
-		}
-	}
-}*/
+//// Dot
+///*
+//void top(ap_int<IBit1*Ksize1*Ksize1*InChannel1>& in,ap_int<MBit1*OutChannel1>& out){
+//#pragma HLS INTERFACE ap_ovld both port=in
+//#pragma HLS INTERFACE ap_ovld both port=out
+//#pragma HLS DATAFLOW
+//	const int P = InChannel1*Ksize1*Ksize1;
+//	const int InBlockSize = IBit1*Ksize1*Ksize1*InChannel1;
+//	ap_int<KBit1*P> DotWeight[OutChannel1] = {2,4,13,23,45,12,3,4,5,23,15,16,23,32,25,14};
+//	ap_int<MBit1> OutSinglePix[OutChannel1];
+//	ap_int<IBit1*Ksize1*Ksize1*InChannel1> in1[OutChannel1];
+//	for(int l = 0; l < OutChannel1;l++){
+//#pragma HLS UNROLL
+//		in1[l] = in;
+//	}
+//	for(int l = 0; l < OutChannel1;l++){
+//#pragma HLS UNROLL
+//		OutSinglePix[l] = Dot<InChannel1*Ksize1*Ksize1,IBit1,KBit1,MBit1>(DotWeight[l],in1);
+//	}
+//
+//	for(int q = 0; q < OutChannel1;q++){
+//#pragma HLS UNROLL
+//		out((q+1)*MBit1-1,q*MBit1) = OutSinglePix[q];
+//	}
+//}*/
+//
+//
+//
+////#define GEMMSIZE 3
+//
+////void aTop(hls::stream<ap_int<8> > &in,hls::stream<ap_int<8> > &out);
+////using namespace hls;
+//
+///*
+//void Gemm_(ap_int<8> weight[GEMMSIZE][GEMMSIZE],ap_int<8> activation[GEMMSIZE][GEMMSIZE],ap_int<8> o[GEMMSIZE][GEMMSIZE]){
+//	ap_int<8> W[GEMMSIZE][GEMMSIZE],A[GEMMSIZE][GEMMSIZE],O[GEMMSIZE][GEMMSIZE];
+//	for(int a = 0; a < GEMMSIZE; a++){
+//#pragma HLS UNROLL
+//		for(int b = 0; b < GEMMSIZE; b++){
+//#pragma HLS UNROLL
+//			O[a][b] = 0;
+//			A[a][b] = activation[(a+b)%GEMMSIZE][b];
+//			W[a][b] = weight[a][(a+b)%GEMMSIZE];
+//		}
+//	}
+//	for(int i = 0;i < GEMMSIZE;i++){
+//#pragma HLS PIPELINE II = 1
+//		for(int j = 0; j < GEMMSIZE; j++){
+//#pragma HLS UNROLL
+//			for(int k = 0; k < GEMMSIZE;k++){
+//#pragma HLS UNROLL
+//				O[j][k] = O[j][k] + W[j][k] * A[j][k];
+//				W[j][k] = W[j][(k+1)%GEMMSIZE];
+//				A[j][k] = A[(j+1)%GEMMSIZE][j];
+//			}
+//		}
+//	}
+//	for(int c = 0; c < GEMMSIZE; c++){
+//#pragma HLS UNROLL
+//		for(int d = 0; d < GEMMSIZE; d++){
+//#pragma HLS UNROLL
+//			o[c][d] = O[c][d];
+//		}
+//	}
+//	return;
+//}
+//*/
+//
+//
+////ap_int<8> k1_8[9] = {1,2,3,4,5,6,7,8,9};
+////ap_int<8> k2[9] = {3,2,1,6,5,4,9,8,7};
+//ap_int<32> k1_32[9] = {1,2,3,4,5,6,7,8,9};
+//ap_int<32> k2_32[9] = {1,2,3,4,5,1,7,8,9};
+//ap_int<32> k3_32[9] = {1,2,3,4,5,4,7,8,9};
+//ap_int<32> k4_32[9] = {1,2,3,4,5,4,7,8,9};
+//double k1_d[9] = {1.2,2.3,3.4,4.5,5.6,6.7,7.8,8.9,9.0};
+//double k2_d[9] = {1.2,2.3,3.4,4.5,5.6,6.7,7.8,8.9,9.0};
+//double k3_d[9] = {1.2,2.3,3.4,4.5,5.6,6.7,7.8,8.9,9.0};
+//double k4_d[9] = {1.2,2.3,3.4,4.5,5.6,6.7,7.8,8.9,9.0};
+///*
+//void four2one(stream<ap_int<8> >& in1,stream<ap_int<8> >& in2,stream<ap_int<8> >& in3,stream<ap_int<8> >& in4,stream<ap_int<32> >& out){
+//	for(int j = 0;j < 48*64;j++){
+//		ap_int<8> m1 = in1.read();
+//		ap_int<8> m2 = in2.read();
+//		ap_int<8> m3 = in3.read();
+//		ap_int<8> m4 = in4.read();
+//		ap_int<32> outm = m1+(m2<<8)+(m3<<16)+(m4<<24);
+//		out.write(outm);
+//	}
+//}
+//
+//void one2four(stream<ap_int<8> >& out1,stream<ap_int<8> >& out2,stream<ap_int<8> >& out3,stream<ap_int<8> >& out4,stream<ap_int<32> >& in){
+//	for(int i = 0;i < 48*64;i++){
+//		ap_int<32> num = in.read();
+//		ap_int<8> n1 = num%256;
+//		ap_int<8> n2 = (num>>8)%256;
+//		ap_int<8> n3 = (num>>16)%256;
+//		ap_int<8> n4 = (num>>24)%256;
+//		out1.write(n1);
+//		out2.write(n2);
+//		out3.write(n3);){
+//		out4.write(n4);
+//	}
+//}*/
+//
+///*
+//void aTop(stream<ap_int<32> > &in,stream<ap_int<32> > &out){
+//#pragma HLS DATAFLOW
+//	stream<ap_int<8> > in1("in1");
+//	stream<ap_int<8> > in2("in2");
+//	stream<ap_int<8> > in3("in3");
+//	stream<ap_int<8> > in4("in4");
+//	stream<ap_int<8> > out1("out1");
+//	stream<ap_int<8> > out2("out2");
+//	stream<ap_int<8> > out3("out3");
+//	stream<ap_int<8> > out4("out4");
+//
+//	one2four(in1,in2,in3,in4,in);
+//	Conv_Top<3,1,8,8,8,8,8,48,64> (in1,out1,k1);
+//	Conv_Top<3,1,8,8,8,8,8,48,64> (in2,out2,k1);
+//	Conv_Top<3,1,8,8,8,8,8,48,64> (in3,out3,k1);
+//	Conv_Top<3,1,8,8,8,8,8,48,64> (in4,out4,k1);
+//	four2one(out1,out2,out3,out4,out);
+//
+//	return;
+//}
+//*/
+//
+///*
+//void top(hls::stream<double >& in,hls::stream<double > &out){
+//#pragma HLS DATAFLOW
+//
+//	hls::stream<ap_int<32> > temp1,temp2,temp3,temp4;
+//	hls::stream<ap_int<32> > temp5,temp7,temp6,temp8;
+//	hls::stream<ap_int<32> > tempo1,tempo2,tempo3,tempo4;
+//	StrExt4Str<32,3072>(in,temp5,temp6,temp7,temp8);
+//	Conv_N<3,1,32,32,32,32,48,64> (temp5,temp1,k1_32);
+//	Conv_N<3,1,32,32,32,32,48,64> (temp6,temp2,k2_32);
+//	Conv_N<3,1,32,32,32,32,48,64> (temp7,temp3,k3_32);
+//	Conv_N<3,1,32,32,32,32,48,64> (temp8,temp4,k4_32);
+//	MaxPooling_Str<2,32,46,62>(temp1,tempo1);
+//	MaxPooling_Str<2,32,46,62>(temp2,tempo2);
+//	MaxPooling_Str<2,32,46,62>(temp3,tempo3);		   	   	   	   	   	   	   	   	   	   	   	   	   	   	   {{1,2,3,4,5,6,7,8,9},{1,2,3,4,5,6,7,8,9},{1,2,3,4,5,6,7,8,9}},\
+//
+//	MaxPooling_Str<2,32,46,62and MobileNet, with the right mix
+//of 1-, 2- and 3-bit parameters that average to just 1.4 bits can equal the accuracy
+//of homogeneous 2-bit versions of these networks. Further, we provide analyses
+//to show that the heterogeneously binarized systems yield FPGA- and ASIC-based
+//implementations that are correspondingly more efficient i>(temp4,tempo4);
+//	for(int i = 0;i < 46;i++){
+//		for(int j = 0;j < 62;j++){
+//			ap_int<32> T1 = tempo1.read();
+//			ap_int<32> T2 = tempo2.read();
+//			ap_int<32> T3 = tempo3.read();
+//			ap_int<32> T4 = tempo4.read();
+//			ap_int<32> T = T1+T2+T3+T4;
+//			out.write(T);
+//		}
+//	}
+//}*/
 
 /*
 void top(hls::stream<ap_int<32> >& in,hls::stream<ap_int<32> >& out){
