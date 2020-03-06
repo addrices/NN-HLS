@@ -49,71 +49,19 @@
 //
 //
 //
-
-void top(ap_uint<4> activation[5][9],ap_int<8> weight[9][9],ap_int<12> o[5][9]){
-
-	ap_int<8> W[9][9];
-	ap_uint<4> A[4][9];
-	ap_int<12> O[4][9];
-#pragma HLS array_partition variable=W complete
-#pragma HLS array_partition variable=A complete
-#pragma HLS array_partition variable=O complete
-
-	for(int i = 0;i < 9;i++)
-#pragma HLS UNROLL
-		for(int j = 0;j < 9;j++)
-#pragma HLS UNROLL
-			W[i][j] = weight[i][(i+j)%9];
-
-	for(int i = 0;i < 4;i++)
-#pragma HLS UNROLL
-		for(int j = 0;j < 9;j++)
-#pragma HLS UNROLL
-			A[i][j] = activation[i][(i+j)%9];
-
-	for(int i = 0;i < 4;i++)
-#pragma HLS UNROLL
-		for(int j = 0;j < 9;j++)
-#pragma HLS UNROLL
-			O[i][j] = 0;
-
-	for(int i = 0;i < 9;i++){
-#pragma HLS PIPELINE II = 1
-		for(int j = 0; j < 4; j++){
-#pragma HLS UNROLL
-			for(int k = 0; k < 9;k++){
-#pragma HLS UNROLL
-				O[j][k] = O[j][k] + W[k][j] * A[j][k];
-			}
-		}
-		for(int j = 0;j < 4;j++){
-#pragma HLS UNROLL
-			ap_uint<4> ATemp = A[j][0];
-			for(int d = 0;d < 9-1;d++){
-#pragma HLS UNROLL
-				A[j][d] = A[j][d+1];
-			}
-			A[j][9-1] = ATemp;
-		}
-		for(int k = 0;k < 9;k++){
-			ap_int<8> WTemp = W[k][0];
-			for(int d = 0;d < 9-1;d++){
-#pragma HLS UNROLL
-				W[k][d] = W[k][d+1];
-			}
-			W[k][9-1] = WTemp;
-		}
-	}
-
-	for(int c = 0; c < 4; c++){
-#pragma HLS UNROLL
-		for(int d = 0; d < 9; d++){
-#pragma HLS UNROLL
-			o[c][d] = O[c][d];
-		}
-	}
+const ap_int<8*3*3> Weight1[16][32];
+const ap_int<8> Bias[32];
+void top(hls::stream<ap_uint<8*4*1> >& in,hls::stream<ap_uint<8*4*1> >& out){
+	Conv_MulAct_Oribital<8,3,28,16,32,1,8,1,1,8,4,12>(in,out,Weight1,Bias,7,1);
 
 }
+
+const ap_int<8*8> Weight2[(16/8)*3*3*(32/8)][8];
+
+//void top(hls::stream<ap_uint<8*4*1> >& in,hls::stream<ap_uint<8*4*1> >& out){
+//	Conv_MulAct_ScaleBit<3,16,32,1,8,4,12,28,8,8>(in,out,Weight2,Bias,7,1);
+//}
+
 
 //// Dot
 ///*
