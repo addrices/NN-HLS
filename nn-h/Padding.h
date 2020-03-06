@@ -4,12 +4,12 @@
 #include <iostream>
 using namespace std;
 
-template <	int TopLeftPad,
-			int BottomRightPad,
-			int MatrixH,
-			int MatrixW,
-			int InChannel,
-			int Ibit>
+template <	unsigned TopLeftPad,
+			unsigned BottomRightPad,
+			unsigned MatrixH,
+			unsigned MatrixW,
+			unsigned InChannel,
+			unsigned Ibit>
 void ZeroPad(					//add padding to image
 	hls::stream<ap_uint<InChannel*Ibit> >& in,
 	hls::stream<ap_uint<InChannel*Ibit> >& out)
