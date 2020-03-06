@@ -83,7 +83,6 @@ void ConvStreamGenerator(hls::stream<ap_uint<IOBit*InChannel> >& in,hls::stream<
 				for(int m = 0;m < Winsize;m++){
 					for(int n = 0;n < Winsize;n++){
 	#pragma HLS PIPELINE II=1
-						int offset = m*Winsize+n;
 						out.write(Local1[(line+m)%Winsize][p+n]);
 					}
 				}

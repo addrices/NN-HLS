@@ -98,34 +98,29 @@ template<unsigned Batch,unsigned WinSize,unsigned Size,unsigned Channel,unsigned
 void ConvStreamGenerator_Batch(hls::stream<ap_uint<Batch*IOBit*IOP> >& in,hls::stream<ap_uint<Batch*IOBit*IOP> >& out,unsigned reps = 1){
 	assert(Channel%IOP == 0);
 	const unsigned IOPack = Channel / IOP;
-	ap_uint<IOBit*Batch*IOP> Local1[WinSize][Size][IOPack];
+	ap_uint<IOBit*Batch*IOP> Local1[WinSize][Size];
 	ap_uint<IOBit*Batch*IOP> temp;
 	for(unsigned rep = 0;rep < reps;rep++){
 		for(unsigned pack = 0;pack < IOPack;pack++){
 			unsigned line = 0;
 			for(unsigned i = 0;i < WinSize-1;i++){
 				for(unsigned j = 0;j < Size;j++){
-					for(unsigned k = 0;k < IOPack;k++){
-						Local1[i][j][k] = in.read();
-					}
+					Local1[i][j] = in.read();
+			//		cout << "read" << hex << Local1[i][j]<< endl;
 				}
 				line++;
 			}
 			for(unsigned i = 0;i < Size-WinSize+1;i++){
 				for(unsigned j = 0;j < Size;j++){
-					for(unsigned k = 0;k < IOPack;k++){
-						Local1[line][j][k] = in.read();
-					}
+					Local1[line][j] = in.read();
 				}
 				line = (line+1)%WinSize;
 				for(unsigned p = 0;p < Size-WinSize+1;p+=Stride){
-					for(unsigned k = 0;k < IOPack;k++){
-						for(unsigned m = 0;m < WinSize;m++){
-							for(unsigned n = 0;n < WinSize;n++){
+					for(unsigned m = 0;m < WinSize;m++){
+						for(unsigned n = 0;n < WinSize;n++){
 #pragma HLS PIPELINE II=1
-								unsigned offset = m*WinSize+n;
-								out.write(Local1[(line+m)%WinSize][p+n][k]);
-							}
+							out.write(Local1[(line+m)%WinSize][p+n]);
+				//			cout << "write" << Local1[(line+m)%WinSize][p+n];
 						}
 					}
 				}
@@ -134,7 +129,7 @@ void ConvStreamGenerator_Batch(hls::stream<ap_uint<Batch*IOBit*IOP> >& in,hls::s
 	}
 }
 
-template<unsigned Batch,unsigned KSize,unsigned Size,unsigned InChannel,unsigned OutChannel,unsigned InP,unsigned MidP,unsigned OutP,unsigned Stride,unsigned WBit,unsigned ABit,unsigned MBit>
+template<unsigned Batch,unsigned KSize,unsigned WBit,unsigned ABit,unsigned MBit,unsigned InChannel,unsigned OutChannel,unsigned Stride,unsigned Size,unsigned InP,unsigned MidP,unsigned OutP>
 void Conv_MulAct_Oribital(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<ap_uint<Batch*ABit*OutP> >& out,const ap_int<WBit*KSize*KSize> Weight[InChannel][OutChannel],const ap_int<WBit> Bias[OutChannel],const unsigned Scale,unsigned reps = 1){
 	assert(InChannel%InP == 0);
 	assert(OutChannel%OutP == 0);
@@ -259,6 +254,17 @@ void Conv_MulAct_Oribital(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<
 			}
 		}
 	}
+}
+
+template<unsigned Batch,unsigned KSize,unsigned Size,unsigned InChannel,unsigned OutChannel,unsigned InP,unsigned MidP,unsigned OutP,unsigned Stride,unsigned WBit,unsigned ABit,unsigned MBit>
+void ConvLayer_NoPad_Orbital(hls::stream<ap_uint<Batch*InP*ABit> >& in,hls::stream<ap_uint<Batch*OutP*ABit> >& out,const ap_int<WBit*KSize*KSize> Weight[InChannel][OutChannel],const ap_int<WBit> Bias[OutChannel],const unsigned Scale,unsigned reps = 1){
+	assert(InChannel%InP == 0);
+	assert(OutChannel%OutP == 0);
+	assert(OutChannel%MidP == 0);
+	hls::stream<ap_uint<Batch*InP*ABit> > Conv_Str;
+#pragma HLS DATAFLOW
+	ConvStreamGenerator_Batch<Batch,KSize,Size,InChannel,InP,ABit,Stride>(in,Conv_Str,reps);
+	Conv_MulAct_Oribital<Batch,KSize,Size,InChannel,OutChannel,InP,MidP,OutP,Stride,WBit,ABit,MBit>(Conv_Str,out,reps);
 }
 
 // template<int KSize, int WBit, int ABit,
