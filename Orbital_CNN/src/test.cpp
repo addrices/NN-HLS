@@ -3,11 +3,12 @@
 #include <hls_stream.h>
 #include <assert.h>
 //#include "../../nn-h/FcnnLayer.h"
-//#include "../../nn-h/util.h"
+#include "../../nn-h/util.h"
 //#include "../../nn-h/conv.h"
 //#include "../../nn-h/pooling.h"
 #include "../../nn-h/conv_systolic.h"
 using namespace std;
+
 
 void ConvStreamGenerator_Batch_Test(){
 	const unsigned Batch = 5;
@@ -21,7 +22,7 @@ void ConvStreamGenerator_Batch_Test(){
 				for(int d =0;d < 28;d++){
 					IMG1[a][b][c][d] = (a+b+c+d)%10;
 				}
-				//cout << endl;
+				cout << endl;
 			}
 		}
 	}
@@ -72,17 +73,17 @@ void ConvStreamGenerator_Batch_Test(){
 void ConvLayer_NoPad_Orbital_Test(){
 	const unsigned Batch = 1;
 	const unsigned InChannel = 1;
-	const unsigned OutChannel = 1;
+	const unsigned OutChannel = 4;
 	const unsigned ABit = 4;
 	const unsigned WBit = 8;
 	const unsigned MBit = 12;
 	const unsigned KSize =3;
 	const unsigned Size = 28;
 	const unsigned InP = 1;
-	const unsigned OutP = 1;
-	const unsigned MidP = 1;
+	const unsigned OutP = 4;
+	const unsigned MidP = 2;
 	const unsigned Stride = 1;
-
+	const unsigned Scale = 1;
 	ap_uint<ABit> IMG1[Batch][InChannel][28][28] =
 			{{{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -114,22 +115,269 @@ void ConvLayer_NoPad_Orbital_Test(){
 			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}}};
 
 
-	hls::stream<ap_uint<Batch*ABit*InP> > in_o,in;
-	hls::stream<ap_uint<Batch*ABit*OutP> > out_o,out;
+	hls::stream<ap_uint<Batch*ABit*InP> > in_o;
+	hls::stream<ap_uint<Batch*OutP*ABit> > out_o;
+	hls::stream<ap_uint<ABit*InChannel> > in;
+	hls::stream<ap_uint<ABit*OutChannel> > out;
 	for(int a = 0;a < Size;a++){
 		for(int b = 0;b < Size;b++){
-			in.write(IMG1[0][0][a][b]);
-			in_o.write(IMG1[0][0][a][b]);
+			in.write(a+b);
+			in_o.write(a+b);
 		}
 	}
-	ConvLayer_NoPad_Orbital<Batch,KSize,WBit,ABit,MBit,InChannel,OutChannel,Stride,Size,InP,MidP,OutP>(in_o,out_o,1);
+
+	ap_int<WBit> OW[OutChannel][InChannel][KSize][KSize] = {{{{1,2,3},{4,5,-4},{3,2,-1}}},{{{1,2,2},{3,5,-4},{3,1,-1}}},{{{1,2,3},{4,0,-4},{3,2,-1}}},{{{-1,2,3},{4,5,-4},{4,3,1}}}};
+    ap_int<WBit> Bias[OutChannel] = {1,1,1,1};
+	ap_int<WBit*InP> Weight_N[(InChannel/InP)*KSize*KSize*(OutChannel/OutP)][OutP];
+	ap_int<WBit*KSize*KSize> Weight_O[OutChannel][InChannel];
+
+	unsigned InPack = InChannel/InP;
+	unsigned OutPack = OutChannel/OutP;
+	trans_normal<InChannel,OutChannel,KSize,InP,OutP,WBit>(OW,Weight_N);
+	trans_orbital<InChannel,OutChannel,KSize,WBit>(OW,Weight_O);
+	ConvLayer_NOPAD_ScaleBit<KSize,WBit,ABit,MBit,InChannel,OutChannel,Stride,Size,InP,OutP>(in,out,Weight_N,Bias,Scale,1);
+	ConvLayer_NOPAD_Orbital<Batch,KSize,Size,InChannel,OutChannel,InP,MidP,OutP,Stride,WBit,ABit,MBit>(in_o,out_o,Weight_O,Bias,Scale,1);
+
+	for(int i = 0;i < 26;i++){
+		for(int j = 0;j < 26;j++){
+			ap_uint<Batch*OutP*ABit> O1 = out_o.read();
+			ap_uint<ABit*OutChannel> O2 = out.read();
+			if(O1 != O2){
+				cout << "!!!!!!!!!!!!!!!!!" << endl;
+				cout << " i " << i << " j " << j << " O1 " << O1 << " O2 " << O2 << endl;
+				assert(0);
+			}
+		}
+	}
+	//ConvLayer_NOPAD_Orbital<Batch,KSize,WBit,ABit,MBit,InChannel,OutChannel,Stride,Size,InP,MidP,OutP>(in_o,out_o,1);
+	//ConvLayer_NOPAD_ScaleBit<KSize,WBit,ABit,MBit,InChannel,OutChannel,Stride,Size,InP,OutP>(in,out,1);
+}
+
+void Orbital_Test(){
+	const unsigned Batch = 2;
+	ap_uint<ABIT> IMG1[Batch][C1_INCHANNEL][C1_SIZE][C1_SIZE] =
+			{{{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}},
+			{{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0},
+			{0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0},
+			{0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,1,0,0,0,0,0},
+			{0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1,0,0,0,0,0},
+			{0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,1,0,0,0,0,0},
+			{0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0},
+			{0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0},
+			{0,0,0,0,0,1,1,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}}};
+
+	hls::stream<ap_uint<Batch*1*ABIT> > O1_in;
+	hls::stream<ap_uint<Batch*8*ABIT> > O1_out;		//1*1*4
+	hls::stream<ap_uint<Batch*1*ABIT> > O2_out;		//1*1*4
+
+	hls::stream<ap_uint<ABIT*C1_INCHANNEL> > C1_in1;
+	hls::stream<ap_uint<ABIT*C1_OUTCHANNEL> > C1_out1;
+	hls::stream<ap_uint<ABIT*C1_INCHANNEL> > C1_in2;
+	hls::stream<ap_uint<ABIT*C1_OUTCHANNEL> > C1_out2;
+
+	hls::stream<ap_uint<ABIT*C2_OUTCHANNEL> > C2_out1;
+	hls::stream<ap_uint<ABIT*C2_OUTCHANNEL> > C2_out2;
+
+	for(int i = 0;i < 28;i++){
+		for(int j = 0;j < 28;j++){
+			C1_in1.write(IMG1[0][0][i][j]);
+			C1_in2.write(IMG1[1][0][i][j]);
+			ap_uint<Batch*C1_INP*ABIT> OTemp;
+			OTemp((2*C1_INP*ABIT)-1,C1_INP*ABIT) = IMG1[1][0][i][j];
+			OTemp(C1_INP*ABIT-1,0) = IMG1[0][0][i][j];
+			O1_in.write(OTemp);
+		}
+	}
+	ConvLayer_NOPAD_ScaleBit<C1_KSIZE,WBIT,ABIT,C1_MBIT,C1_INCHANNEL,C1_OUTCHANNEL,C1_STRIDE,C1_SIZE,C1_INP,C1_OUTP>(C1_in1,C1_out1,C1_W_,C1_B,C1_SCALEBIT,1);
+	ConvLayer_NOPAD_ScaleBit<C2_KSIZE,WBIT,ABIT,C2_MBIT,C2_INCHANNEL,C2_OUTCHANNEL,C2_STRIDE,C2_SIZE,C2_INP,C2_OUTP>(C1_out1,C2_out1,C2_W_,C2_B,C2_SCALEBIT,1);
+
+	ConvLayer_NOPAD_ScaleBit<C1_KSIZE,WBIT,ABIT,C1_MBIT,C1_INCHANNEL,C1_OUTCHANNEL,C1_STRIDE,C1_SIZE,C1_INP,C1_OUTP>(C1_in2,C1_out2,C1_W_,C1_B,C1_SCALEBIT,1);
+	ConvLayer_NOPAD_ScaleBit<C2_KSIZE,WBIT,ABIT,C2_MBIT,C2_INCHANNEL,C2_OUTCHANNEL,C2_STRIDE,C2_SIZE,C2_INP,C2_OUTP>(C1_out2,C2_out2,C2_W_,C2_B,C2_SCALEBIT,1);
+
+	ConvLayer_NOPAD_Orbital<Batch,C1_KSIZE,C1_SIZE,C1_INCHANNEL,C1_OUTCHANNEL,1,C1_MIDP,8,C1_STRIDE,WBIT,ABIT,C1_MBIT>(O1_in,O1_out,C1_W,C1_B,C1_SCALEBIT,1);
+	ConvLayer_NOPAD_Orbital<Batch,C2_KSIZE,C2_SIZE,C2_INCHANNEL,C2_OUTCHANNEL,8,C2_MIDP,1,C2_STRIDE,WBIT,ABIT,C2_MBIT>(O1_out,O2_out,C2_W,C2_B,C2_SCALEBIT,1);
+
+	for(int i = 0;i < 24;i++){
+		for(int j = 0;j < 24;j++){
+			ap_uint<128> N1 = C2_out1.read();
+			ap_uint<128> N2 = C2_out2.read();
+			for(int m = 0;m < 32;m++){
+				ap_uint<8> O = O2_out.read();
+				ap_uint<4> O1 = O(3,0);
+				ap_uint<4> O2 = O(7,4);
+				ap_uint<4> n1 = N1((m+1)*4-1,m*4);
+				ap_uint<4> n2 = N2((m+1)*4-1,m*4);
+				if(O1!=n1 || O2!=n2){
+					cout << "i:" << i << " j:" << j << " m:" << m << endl;
+					assert(0);
+				}
+			}
+		}
+	}
+	cout << " good " << endl;
+}
+
+void test_temp(){
+	const unsigned ABit = 8;
+	ap_uint<ABit> IMG[1][2][3][3] =
+		{{{{1,0,3},{2,1,3},{3,2,3}},
+		  {{1,0,4},{3,5,1},{5,5,8}}}};
+	ap_int<8> W1[2][2][3][3] =
+		{{{{1,2,0},{2,0,3},{3,0,3}},
+	      {{1,0,0},{0,3,1},{1,3,4}}},
+		  {{{1,2,3},{2,1,3},{3,2,3}},
+	      {{1,0,4},{3,3,1},{2,3,4}}}};
+	ap_int<8> B1[2] = {1,-1};
+
+	ap_int<8> Wn[2*9*2][1];
+	ap_int<8*9> Wo[2][2];
+	trans_normal<2,2,3,1,1,8>(W1,Wn);
+	trans_orbital<2,2,3,8>(W1,Wo);
+
+	hls::stream<ap_uint<ABit*2> > C1_in1;
+	hls::stream<ap_uint<ABit*2> > C1_out1;
+	hls::stream<ap_uint<ABit*1> > O1_in1;
+	hls::stream<ap_uint<ABit*1> > O1_out1;
+	for(int i = 0;i < 3;i++){
+		for(int j = 0;j < 3;j++){
+			ap_uint<ABit*2> C1;
+			C1(2*ABit-1,ABit) = IMG[0][1][i][j];
+			C1(ABit-1,0) = IMG[0][0][i][j];
+			C1_in1.write(C1);
+			O1_in1.write(IMG[0][0][i][j]);
+			O1_in1.write(IMG[0][1][i][j]);
+		}
+	}
+
+	ConvLayer_NOPAD_ScaleBit<3,8,ABit,12,2,2,1,3,1,1>(C1_in1,C1_out1,Wn,B1,1,1);
+	ConvLayer_NOPAD_Orbital<1,3,3,2,2,1,2,1,1,8,ABit,12>(O1_in1,O1_out1,Wo,B1,1,1);
+
+	ap_uint<ABit*2> Cout = C1_out1.read();
+	ap_uint<ABit*1> Oout1 = O1_out1.read();
+	ap_uint<ABit*1> Oout2 = O1_out1.read();
+	cout << hex << Cout << endl;
+	cout << hex << Oout1 << endl;
+	cout << hex << Oout2 << endl;
+
+}
+
+void test_gemm(){
+	ap_uint<4> act[3][9] = {{1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1}};
+	ap_int<8> wei[3][9] = {{1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1}};
+	ap_int<12> res[3][3];
+
+	ap_uint<4*3*9> A;
+	for(int i = 0;i < 3;i++){
+		for(int j = 0;j < 9;j++){
+			A((i*9+j+1)*4-1,(i*9+j)*4) = act[i][j];
+		}
+	}
+	ap_uint<8*3*9> W;
+	for(int i = 0;i < 3;i++){
+		for(int j = 0;j < 9;j++){
+			W((i*9+j+1)*8-1,(i*9+j)*8) = wei[i][j];
+		}
+	}
+	ap_int<12*3*3> R;
+	R = Orbital_Gemm<9,3,3,4,8,12>(A,W);
+	cout << R << endl;
+	for(int i = 0;i < 3;i++){
+		for(int j = 0;j < 3;j++){
+			res[i][j] = R((i*3+j+1)*12-1,(i*3+j)*12);
+			cout << res[i][j] << ' ';
+		}
+		cout << endl;
+	}
 }
 
 int main(){
-	ConvStreamGenerator_Batch_Test();
+	// ConvStreamGenerator_Batch_Test();
+	// ConvLayer_NoPad_Orbital_Test();
+	Orbital_Test();
 }
 
+
+
+//void Total_Transform(){
+//	const unsigned WBit = 8;
+//	const unsigned KSize = 3;
+//	const unsigned OutChannel1 = 16;
+//	const unsigned InChannel1 = 1;
+//	const unsigned OutChannel2 = 32;
+//	const unsigned InChannel2 = 16;
+//	const unsigned OutChannel3 = 64;
+//	const unsigned InChannel3 = 32;
+//	const unsigned OutChannel4 = 64;
+//	const unsigned InChannel4 = 64;
+//	ap_int<WBit*KSize*KSize> OutWeight1[OutChannel1][InChannel1];
+//	trans_orbital<InChannel1,OutChannel1,KSize,WBit>(L1_Wei,OutWeight1);
+//	cout << "L1" << endl;
+//	cout_weight<WBit*KSize*KSize,OutChannel1,InChannel1>(OutWeight1);
 //
+//	ap_int<WBit*KSize*KSize> OutWeight2[OutChannel2][InChannel2];
+//	trans_orbital<InChannel2,OutChannel2,KSize,WBit>(L2_Wei,OutWeight2);
+//	cout << "L2" << endl;
+//	cout_weight<WBit*KSize*KSize,OutChannel2,InChannel2>(OutWeight2);
+//
+//	ap_int<WBit*KSize*KSize> OutWeight3[OutChannel3][InChannel3];
+//	trans_orbital<InChannel3,OutChannel3,KSize,WBit>(L3_Wei,OutWeight3);
+//	cout << "L3" << endl;
+//	cout_weight<WBit*KSize*KSize,OutChannel3,InChannel3>(OutWeight3);
+//
+//	ap_int<WBit*KSize*KSize> OutWeight4[OutChannel4][InChannel4];
+//	trans_orbital<InChannel4,OutChannel4,KSize,WBit>(L4_Wei,OutWeight4);
+//	cout << "L4" << endl;
+//	cout_weight<WBit*KSize*KSize,OutChannel4,InChannel4>(OutWeight4);
+//}
+
+
 //struct ap_axis{
 //	ap_uint<128> data;
 //	ap_int<1> last;

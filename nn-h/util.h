@@ -117,3 +117,55 @@ void EleExtend(hls::stream<ap_uint<IOP*IBit> >& in,hls::stream<ap_uint<IOP*OBit>
 		out.write(res);
 	}
 }
+
+template<unsigned InChannel,unsigned OutChannel,unsigned KSize,unsigned InP,unsigned OutP,unsigned WBit>
+void trans_normal(ap_int<WBit> Weight_1[OutChannel][InChannel][KSize][KSize],ap_int<WBit*InP> OutWeight[(InChannel/InP)*KSize*KSize*(OutChannel/OutP)][OutP]){
+	unsigned InPack = InChannel/InP;
+	unsigned OutPack = OutChannel/OutP;
+	for(unsigned i = 0;i < OutChannel;i++){
+		for(unsigned j = 0;j < InChannel;j++){
+			for(unsigned m = 0;m < KSize;m++){
+				for(unsigned n = 0;n < KSize;n++){
+					unsigned C_InPack = j / InP;					
+					unsigned C_InP = j % InP;					
+					unsigned C_OutPack = i / OutP;				
+					unsigned C_OutP = i % OutP;
+					unsigned Offset = (m*KSize+n)*InPack*OutPack + C_InPack*OutPack + C_OutPack;
+					OutWeight[Offset][C_OutP]((C_InP+1)*WBit-1,C_InP*WBit) = Weight_1[i][j][m][n];
+				}
+			}
+		}
+	}
+}
+
+template<unsigned InChannel,unsigned OutChannel,unsigned KSize,unsigned WBit>
+void trans_orbital(ap_int<WBit> Weight_1[OutChannel][InChannel][KSize][KSize],const ap_int<WBit*KSize*KSize> OutWeight[OutChannel][InChannel]){
+	for(unsigned i = 0;i < OutChannel;i++){
+		for(unsigned j = 0;j < InChannel;j++){
+			for(unsigned m = 0;m < KSize;m++){
+				for(unsigned n = 0;n < KSize;n++){
+					unsigned offset = m*KSize+n;
+					OutWeight[i][j]((offset+1)*WBit-1,offset*WBit) = Weight_1[i][j][m][n];
+				}
+			}
+		}
+	}
+}
+
+template<unsigned BitWidth,unsigned A,unsigned B>
+void cout_weight(ap_int<BitWidth> Weight[A][B]){
+	cout << "{";
+	for(int i = 0;i < A;i++){
+		cout << "{";
+		for(int j = 0;j < B;j++){
+			cout << "\'" << hex << (ap_uint<BitWidth>)Weight[i][j] << "\'";
+			if(j != B-1){
+				cout << ",";
+			}
+		}
+		if(i != A-1)
+			cout << "}," << endl;
+		else
+			cout << "}}" << endl;
+	}
+}

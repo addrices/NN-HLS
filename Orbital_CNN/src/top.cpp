@@ -3,6 +3,7 @@
 #include "../../nn-h/conv.h"
 #include "../../nn-h/pooling.h"
 #include "../../nn-h/conv_systolic.h"
+#include "config.h"
 #include <ap_int.h>
 #include <hls_stream.h>
 
@@ -49,12 +50,25 @@
 //
 //
 //
-const ap_int<8*3*3> Weight1[16][32];
+const ap_int<8*3*3> Weight1[1][16];
 const ap_int<8> Bias[32];
-void top(hls::stream<ap_uint<8*4*1> >& in,hls::stream<ap_uint<8*4*1> >& out){
-	Conv_MulAct_Oribital<8,3,28,16,32,1,8,1,1,8,4,12>(in,out,Weight1,Bias,7,1);
+void top(hls::stream<ap_uint<5*1*4> >& in,hls::stream<ap_uint<5*4*4> >& out){
+	const unsigned Batch = 5;
+	//ConvLayer_NOPAD_Orbital<Batch,C2_KSIZE,C2_SIZE,C2_INCHANNEL,C2_OUTCHANNEL,1,8,4,1,8,4,12>(in,out,C2_W,C2_B,C2_SCALEBIT,1);
 
 }
+
+//void top(hls::stream<ap_uint<4*20*20> >& act,hls::stream<ap_int<8*20*20> >& wei,hls::stream<ap_int<12*20*20> >& res){
+//	//template<unsigned Depth,unsigned ASize,unsigned WSize,unsigned ABit,unsigned WBit,unsigned MBit>
+//	//void Orbital_Gemm(ap_uint<ABit*ASize*Depth> activation,ap_int<WBit*WSize*Depth> weight,ap_int<MBit*ASize*WSize> o){
+//	for(int i = 0;i < 100;i++){
+//		ap_uint<4*5*9> a = act.read();
+//		ap_int<8*8*9> b = wei.read();
+//		ap_int<12*5*8> c;
+//		c = Orbital_Gemm<20,20,20,4,8,12>(a,b);
+//		res.write(c);
+//	}
+//}
 
 const ap_int<8*8> Weight2[(16/8)*3*3*(32/8)][8];
 

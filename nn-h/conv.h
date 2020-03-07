@@ -58,32 +58,32 @@ ap_uint<ABit> SCALE_RELU_ScaleBit(ap_int<MBit> in,const unsigned ScaleBit){
 	return result;
 }
 
-template<unsigned Winsize,
+template<unsigned WinSize,
 unsigned InChannel,
 unsigned Stride,
 unsigned IOBit,
 unsigned MatrixW,unsigned MatrixH>			//Conv Stream from image
 void ConvStreamGenerator(hls::stream<ap_uint<IOBit*InChannel> >& in,hls::stream<ap_uint<IOBit*InChannel> >& out,unsigned reps = 1){
-	ap_uint<IOBit*InChannel> Local1[Winsize][MatrixW];
+	ap_uint<IOBit*InChannel> Local1[WinSize][MatrixW];
 	ap_uint<IOBit*InChannel> temp;
 	for(unsigned rep = 0;rep < reps;rep++){
 		unsigned line = 0;
-		for(unsigned i = 0;i < Winsize-1;i++){
+		for(unsigned i = 0;i < WinSize-1;i++){
 			for(unsigned j = 0;j < MatrixW;j++){
 				Local1[i][j] = in.read();
 			}
 			line++;
 		}
-		for(unsigned i = 0;i < MatrixH-Winsize+1;i++){
+		for(unsigned i = 0;i < MatrixH-WinSize+1;i++){
 			for(unsigned j = 0;j < MatrixW;j++){
 				Local1[line][j] = in.read();
 			}
-			line = (line+1)%Winsize;
-			for(unsigned p = 0;p < MatrixW-Winsize+1;p+=Stride){
-				for(unsigned m = 0;m < Winsize;m++){
-					for(unsigned n = 0;n < Winsize;n++){
+			line = (line+1)%WinSize;
+			for(unsigned p = 0;p < MatrixW-WinSize+1;p+=Stride){
+				for(unsigned m = 0;m < WinSize;m++){
+					for(unsigned n = 0;n < WinSize;n++){
 	#pragma HLS PIPELINE II=1
-						out.write(Local1[(line+m)%Winsize][p+n]);
+						out.write(Local1[(line+m)%WinSize][p+n]);
 					}
 				}
 			}
