@@ -53,11 +53,11 @@
 //
 const ap_int<8*3*3> Weight1[1][16];
 const ap_int<8> Bias[32];
-void top(hls::stream<ap_uint<8*1*4> >& in,hls::stream<ap_uint<8*8*4> >& out){
-	const unsigned Batch = 8;
-	ConvLayer_NOPAD_Orbital<Batch,C2_KSIZE,C2_SIZE,C2_INCHANNEL,C2_OUTCHANNEL,1,8,8,1,8,4,12>(in,out,C2_W,C2_B,C2_SCALEBIT,1);
-
-}
+//void top(hls::stream<ap_uint<8*1*4> >& in,hls::stream<ap_uint<8*8*4> >& out){
+//	const unsigned Batch = 8;
+//	ConvLayer_NOPAD_Orbital<Batch,C2_KSIZE,C2_SIZE,C2_INCHANNEL,C2_OUTCHANNEL,1,8,8,1,8,4,12>(in,out,C2_W,C2_B,C2_SCALEBIT,1);
+//
+//}
 
 //void top(hls::stream<ap_uint<4*20*20> >& act,hls::stream<ap_int<8*20*20> >& wei,hls::stream<ap_int<12*20*20> >& res){
 //	//template<unsigned Depth,unsigned ASize,unsigned WSize,unsigned ABit,unsigned WBit,unsigned MBit>
@@ -73,9 +73,9 @@ void top(hls::stream<ap_uint<8*1*4> >& in,hls::stream<ap_uint<8*8*4> >& out){
 
 const ap_int<8*8> Weight2[(16/8)*3*3*(32/8)][8];
 
-//void top(hls::stream<ap_uint<16*4> >& in,hls::stream<ap_uint<32*4> >& out){
-//	C2:ConvLayer_NOPAD_ScaleBit<C2_KSIZE,WBIT,ABIT,C2_MBIT,C2_INCHANNEL,C2_OUTCHANNEL,C2_STRIDE,C2_SIZE,8,8>(in,out,C2_W_,C2_B,C2_SCALEBIT,8);
-//}
+void top(hls::stream<ap_uint<16*4> >& in,hls::stream<ap_uint<32*4> >& out){
+	C2:ConvLayer_NOPAD_ScaleBit<C2_KSIZE,WBIT,ABIT,C2_MBIT,C2_INCHANNEL,C2_OUTCHANNEL,C2_STRIDE,C2_SIZE,8,8>(in,out,C2_W_,C2_B,C2_SCALEBIT,8);
+}
 
 
 
