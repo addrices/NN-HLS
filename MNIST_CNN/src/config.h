@@ -68,6 +68,7 @@
 #define F5_INP 8
 #define F5_OUTP 8
 #define F5_SCALEBIT 8
+#define F5_MBIT 12
 
 //FC
 #define F6_IN 32
@@ -75,6 +76,7 @@
 #define F6_INP 8
 #define F6_OUTP 10
 #define F6_SCALEBIT 7
+#define F6_MBIT 12
 
 const ap_int<WBIT> C1_B[C1_OUTCHANNEL] = {9,21,19,44,43,34,25,-10,73,33,27,-19,1,29,16,13};
 const ap_int<WBIT> C2_B[C2_OUTCHANNEL] = {24,-20,7,-5,3,-1,20,-13,10,9,4,17,-14,0,3,-17,23,-11,-5,22,8,-13,18,-22,-8,-14,9,13,20,13,13,9};

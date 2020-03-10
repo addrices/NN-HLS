@@ -28,18 +28,17 @@ ap_uint<IBit>  Min(ap_uint<IBit> a[Size]){
 	return min;
 }
 
-template<unsigned Batch,
-unsigned WinSize,
+template<unsigned WinSize,
 unsigned Channel,
 unsigned IOBit,
 unsigned Size,
 unsigned IOP>
-void PoolStreamGenerator_Batch(hls::stream<ap_uint<IOP*Batch*IOBit> >& in,hls::stream<ap_uint<IOP*Batch*IOBit> >& out,unsigned reps = 1){
+void PoolStreamGenerator_IOP(hls::stream<ap_uint<IOP*IOBit> >& in,hls::stream<ap_uint<IOP*IOBit> >& out,unsigned reps = 1){
 	assert(Channel%IOP == 0);
 	const unsigned IOPack = Channel / IOP;
-	ap_uint<IOBit*Batch*IOP> Local1[WinSize][Size][IOPack];
+	ap_uint<IOBit*IOP> Local1[WinSize][Size][IOPack];
 #pragma HLS ARRAY_PARTITION variable=Local1 complete
-	ap_uint<IOBit*Batch*IOP> temp;
+	ap_uint<IOBit*IOP> temp;
 	for(unsigned rep = 0;rep < reps;rep++){
 		unsigned line = 0;
 		for(unsigned i = 0;i < Size;i++){
@@ -53,9 +52,9 @@ void PoolStreamGenerator_Batch(hls::stream<ap_uint<IOP*Batch*IOBit> >& in,hls::s
 			if(line == WinSize){
 				line = 0;
 				for(unsigned p = 0;p < Size-WinSize+1;p+=WinSize){
-					for(unsigned pack = 0;pack < IOPack;pack++){
 						for(unsigned m = 0;m < WinSize;m++){
 							for(unsigned n = 0;n < WinSize;n++){
+								for(unsigned pack = 0;pack < IOPack;pack++){
 #pragma HLS PIPELINE II=1
 								out.write(Local1[m][p+n][pack]);
 							}
@@ -105,48 +104,67 @@ void PoolStreamGenerator(hls::stream<ap_uint<IOBit*InChannel> >& in,hls::stream<
 }
 
 template<unsigned WinSize,
-unsigned IObit,
+unsigned IOBit,
 unsigned Channel,
 unsigned Packs,
 unsigned InP,
 unsigned OutP>
-void MaxPooling_Run(hls::stream<ap_uint<IObit*InP> >& in, hls::stream<ap_uint<IObit*OutP> >& out,unsigned reps = 1){
+void MaxPooling_Run(hls::stream<ap_uint<IOBit*InP> >& in, hls::stream<ap_uint<IOBit*OutP> >& out,unsigned reps = 1){
 	const unsigned InPack = Channel/InP;
 	const unsigned OutPack = Channel/OutP;
-	ap_uint<IObit*InP> InTemp;
-	ap_uint<IObit*OutP> OutTemp;
-	ap_uint<IObit> PoolVec[Channel][WinSize*WinSize];
+	ap_uint<IOBit*InP> InTemp;
+	ap_uint<IOBit*OutP> OutTemp;
+	ap_uint<IOBit> PoolVec[Channel][WinSize*WinSize];
 	for(unsigned rep = 0; rep < reps;rep++){
-	for(unsigned i = 0;i < Packs;i++){
-		for(unsigned j = 0;j < WinSize*WinSize;j++){
-			for(unsigned k = 0;k < InPack;k++){
-#pragma HLS PIPELINE II = 1
-				InTemp = in.read();
-				for(unsigned l = 0; l < InP;l++){
-					unsigned NChannel = k*InP+l;
-					PoolVec[NChannel][j] = InTemp((l+1)*IObit-1,l*IObit);
+		for(unsigned i = 0;i < Packs;i++){
+			for(unsigned j = 0;j < WinSize*WinSize;j++){
+				for(unsigned k = 0;k < InPack;k++){
+	#pragma HLS PIPELINE II = 1
+					InTemp = in.read();
+					for(unsigned l = 0; l < InP;l++){
+						unsigned NChannel = k*InP+l;
+						PoolVec[NChannel][j] = InTemp((l+1)*IOBit-1,l*IOBit);
+					}
 				}
 			}
-		}
-		for(unsigned w = 0;w < OutPack;w++){
-			for(unsigned e = 0;e < OutP;e++){
-				unsigned NChannel = w * OutP+e;
-				OutTemp((e+1)*IObit-1,e*IObit) = Max<WinSize*WinSize,IObit>(PoolVec[NChannel]);
+			for(unsigned w = 0;w < OutPack;w++){
+				for(unsigned e = 0;e < OutP;e++){
+					unsigned NChannel = w * OutP+e;
+					OutTemp((e+1)*IOBit-1,e*IOBit) = Max<WinSize*WinSize,IOBit>(PoolVec[NChannel]);
+				}
+				out.write(OutTemp);
 			}
-			out.write(OutTemp);
 		}
-	}
 	}
 }
 
 template<unsigned WinSize,
-unsigned IObit,
+unsigned IOBit,
+unsigned Size,
+unsigned Channel,
+unsigned InP,
+unsigned OutP>
+void MaxPool_IOP(hls::stream<ap_uint<IOBit*InP> >& in, hls::stream<ap_uint<IOBit*OutP> >& out,unsigned reps = 1){
+#pragma HLS DATAFLOW
+//	assert(Size%WinSize == 0);
+//	assert(Size%WinSize == 0);
+//	assert(Channel%InP == 0);
+//	assert(Channel%OutP == 0);
+	const unsigned Packs = Size*Size;
+	const unsigned OutPacks = (Size/WinSize)*(Size/WinSize);
+	hls::stream<ap_uint<IOBit*InP> > PoolPacks;
+	PoolStreamGenerator_IOP<WinSize,Channel,IOBit,Size,InP>(in,PoolPacks,reps);
+	MaxPooling_Run<WinSize,IOBit,Channel,OutPacks,InP,OutP>(PoolPacks,out,reps);
+}
+
+template<unsigned WinSize,
+unsigned IOBit,
 unsigned MatrixH,
 unsigned MatrixW,
 unsigned Channel,
 unsigned InP,
 unsigned OutP>
-void MaxPool_IOP(hls::stream<ap_uint<IObit*Channel> >& in, hls::stream<ap_uint<IObit*Channel> >& out,unsigned reps = 1){
+void MaxPool_Channel(hls::stream<ap_uint<IOBit*Channel> >& in, hls::stream<ap_uint<IOBit*Channel> >& out,unsigned reps = 1){
 #pragma HLS DATAFLOW
 //	assert(MatrixH%WinSize == 0);
 //	assert(MatrixW%WinSize == 0);
@@ -154,24 +172,24 @@ void MaxPool_IOP(hls::stream<ap_uint<IObit*Channel> >& in, hls::stream<ap_uint<I
 //	assert(Channel%OutP == 0);
 	const unsigned Packs = MatrixH*MatrixW;
 	const unsigned OutPacks = (MatrixH/WinSize)*(MatrixW/WinSize);
-	hls::stream<ap_uint<IObit*Channel> > PoolPacks;
-	PoolStreamGenerator<WinSize,Channel,IObit,MatrixW,MatrixH>(in,PoolPacks,reps);
-	hls::stream<ap_uint<IObit*InP> > PoolInP;
-	hls::stream<ap_uint<IObit*OutP> > PoolOutP;
-	splitStream_Length<IObit*Channel,IObit*InP,Packs>(PoolPacks,PoolInP,reps);
-	MaxPooling_Run<WinSize,IObit,Channel,OutPacks,InP,OutP>(PoolInP,PoolOutP,reps);
-	mergeStream_Length<IObit*OutP,IObit*Channel,OutPacks>(PoolOutP,out,reps);
+	hls::stream<ap_uint<IOBit*Channel> > PoolPacks;
+	PoolStreamGenerator<WinSize,Channel,IOBit,MatrixW,MatrixH>(in,PoolPacks,reps);
+	hls::stream<ap_uint<IOBit*InP> > PoolInP;
+	hls::stream<ap_uint<IOBit*OutP> > PoolOutP;
+	splitStream_Length<IOBit*Channel,IOBit*InP,Packs>(PoolPacks,PoolInP,reps);
+	MaxPooling_Run<WinSize,IOBit,Channel,OutPacks,InP,OutP>(PoolInP,PoolOutP,reps);
+	mergeStream_Length<IOBit*OutP,IOBit*Channel,OutPacks>(PoolOutP,out,reps);
 }
 
 
 template<unsigned WinSize,
-unsigned IObit,
+unsigned IOBit,
 unsigned MatrixH,
 unsigned MatrixW,
 unsigned Channel,
 unsigned InP,
 unsigned OutP>
-void MaxPool_IOP_T(hls::stream<ap_uint<IObit*Channel> >& in, hls::stream<ap_uint<IObit*OutP> >& out,unsigned reps = 1){
+void MaxPool_Channel_T(hls::stream<ap_uint<IOBit*Channel> >& in, hls::stream<ap_uint<IOBit*OutP> >& out,unsigned reps = 1){
 #pragma HLS DATAFLOW
 //	assert(MatrixH%WinSize == 0);
 //	assert(MatrixH%WinSize == 0);
@@ -179,10 +197,10 @@ void MaxPool_IOP_T(hls::stream<ap_uint<IObit*Channel> >& in, hls::stream<ap_uint
 //	assert(Channel%OutP == 0);
 	const unsigned Packs = MatrixH*MatrixW;
 	const unsigned OutPacks = (MatrixH/WinSize)*(MatrixW/WinSize);
-	hls::stream<ap_uint<IObit*Channel> > PoolPacks;
-	PoolStreamGenerator<WinSize,Channel,IObit,MatrixW,MatrixH>(in,PoolPacks,reps);
-	hls::stream<ap_uint<IObit*InP> > PoolInP;
-	splitStream_Length<IObit*Channel,IObit*InP,Packs>(PoolPacks,PoolInP,reps);
-	MaxPooling_Run<WinSize,IObit,Channel,OutPacks,InP,OutP>(PoolInP,out,reps);
-	//mergeStream_Length<IObit*OutP,IObit*Channel,OutPacks>(PoolOutP,out);
+	hls::stream<ap_uint<IOBit*Channel> > PoolPacks;
+	PoolStreamGenerator<WinSize,Channel,IOBit,MatrixW,MatrixH>(in,PoolPacks,reps);
+	hls::stream<ap_uint<IOBit*InP> > PoolInP;
+	splitStream_Length<IOBit*Channel,IOBit*InP,Packs>(PoolPacks,PoolInP,reps);
+	MaxPooling_Run<WinSize,IOBit,Channel,OutPacks,InP,OutP>(PoolInP,out,reps);
+	//mergeStream_Length<IOBit*OutP,IOBit*Channel,OutPacks>(PoolOutP,out);
 }
