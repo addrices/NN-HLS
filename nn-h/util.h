@@ -169,3 +169,28 @@ void cout_weight(ap_int<BitWidth> Weight[A][B]){
 			cout << "}}" << endl;
 	}
 }
+
+template<unsigned Batch,unsigned IBit,unsigned OBit,unsigned InP,unsigned OutP,unsigned Length>
+void Trans_BatchStr(hls::stream<ap_uint<IBit*InP> >& in,hls::stream<ap_uint<Batch*OBit*OutP> >&out,unsigned reps = 1){
+	ap_uint<IBit*InP> InTemp[Batch];	//cut
+	ap_uint<Batch*OBit*OutP> OutTemp;
+	for(int rep = 0;rep < reps;rep++){
+		unsigned Count = 0;
+		for(int i = 0;i < Length;i++){
+			for(int b = 0;b < Batch;b++){
+				InTemp[b] = in.read();
+			}
+			for(int j = 0;j < InP;j++){
+				for(int b = 0;b < Batch;b++){
+					unsigned off = j*Batch+b;
+					OutTemp((Count*Batch+b+1)*OBit-1,(Count*Batch+b)*OBit) = InTemp[b]((j+1)*IBit-(IBit-OBit)-1,j*IBit);
+				}
+				Count++;
+				if(Count == OutP){
+					Count = 0;
+					out.write(OutTemp);
+				}
+			}
+		}
+	}
+}

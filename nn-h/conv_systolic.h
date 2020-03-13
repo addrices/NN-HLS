@@ -331,7 +331,7 @@ void Conv_MulAct_Oribital(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<
 				}
 				for(unsigned mpack = 0;mpack < MidPack;mpack++){
 					Orbital:for(unsigned inp = 0;inp < InP;inp++){
-// #pragma HLS PIPELINE II = Depth+2
+#pragma HLS UNROLL
 						//one orbital
 						unsigned NInChannel = ipack * InP + inp;
 						ap_uint<ABit*Batch*Depth> act;

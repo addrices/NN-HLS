@@ -1,0 +1,390 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+-------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2018.3 (lin64) Build 2405991 Thu Dec  6 23:36:41 MST 2018
+| Date         : Wed Mar 11 19:27:19 2020
+| Host         : Cu running 64-bit Ubuntu 18.04.3 LTS
+| Command      : report_utilization -file top_utilization_synth.rpt -pb top_utilization_synth.pb
+| Design       : top
+| Device       : 7z020clg400-1
+| Design State : Synthesized
+-------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Slice Logic
+1.1 Summary of Registers by Type
+2. Memory
+3. DSP
+4. IO and GT Specific
+5. Clocking
+6. Specific Feature
+7. Primitives
+8. Black Boxes
+9. Instantiated Netlists
+
+1. Slice Logic
+--------------
+
++----------------------------+-------+-------+-----------+-------+
+|          Site Type         |  Used | Fixed | Available | Util% |
++----------------------------+-------+-------+-----------+-------+
+| Slice LUTs*                | 33192 |     0 |     53200 | 62.39 |
+|   LUT as Logic             | 32928 |     0 |     53200 | 61.89 |
+|   LUT as Memory            |   264 |     0 |     17400 |  1.52 |
+|     LUT as Distributed RAM |   264 |     0 |           |       |
+|     LUT as Shift Register  |     0 |     0 |           |       |
+| Slice Registers            | 44518 |     0 |    106400 | 41.84 |
+|   Register as Flip Flop    | 44518 |     0 |    106400 | 41.84 |
+|   Register as Latch        |     0 |     0 |    106400 |  0.00 |
+| F7 Muxes                   |  2244 |     0 |     26600 |  8.44 |
+| F8 Muxes                   |  1024 |     0 |     13300 |  7.70 |
++----------------------------+-------+-------+-----------+-------+
+* Warning! The Final LUT count, after physical optimizations and full implementation, is typically lower. Run opt_design after synthesis, if not already completed, for a more realistic count.
+
+
+1.1 Summary of Registers by Type
+--------------------------------
+
++-------+--------------+-------------+--------------+
+| Total | Clock Enable | Synchronous | Asynchronous |
++-------+--------------+-------------+--------------+
+| 0     |            _ |           - |            - |
+| 0     |            _ |           - |          Set |
+| 0     |            _ |           - |        Reset |
+| 0     |            _ |         Set |            - |
+| 0     |            _ |       Reset |            - |
+| 0     |          Yes |           - |            - |
+| 0     |          Yes |           - |          Set |
+| 0     |          Yes |           - |        Reset |
+| 16490 |          Yes |         Set |            - |
+| 28028 |          Yes |       Reset |            - |
++-------+--------------+-------------+--------------+
+
+
+2. Memory
+---------
+
++-------------------+------+-------+-----------+-------+
+|     Site Type     | Used | Fixed | Available | Util% |
++-------------------+------+-------+-----------+-------+
+| Block RAM Tile    |   65 |     0 |       140 | 46.43 |
+|   RAMB36/FIFO*    |   34 |     0 |       140 | 24.29 |
+|     RAMB36E1 only |   34 |       |           |       |
+|   RAMB18          |   62 |     0 |       280 | 22.14 |
+|     RAMB18E1 only |   62 |       |           |       |
++-------------------+------+-------+-----------+-------+
+* Note: Each Block RAM Tile only has one FIFO logic available and therefore can accommodate only one FIFO36E1 or one FIFO18E1. However, if a FIFO18E1 occupies a Block RAM Tile, that tile can still accommodate a RAMB18E1
+
+
+3. DSP
+------
+
++----------------+------+-------+-----------+-------+
+|    Site Type   | Used | Fixed | Available | Util% |
++----------------+------+-------+-----------+-------+
+| DSPs           |  153 |     0 |       220 | 69.55 |
+|   DSP48E1 only |  153 |       |           |       |
++----------------+------+-------+-----------+-------+
+
+
+4. IO and GT Specific
+---------------------
+
++-----------------------------+------+-------+-----------+--------+
+|          Site Type          | Used | Fixed | Available |  Util% |
++-----------------------------+------+-------+-----------+--------+
+| Bonded IOB                  |  300 |     0 |       125 | 240.00 |
+| Bonded IPADs                |    0 |     0 |         2 |   0.00 |
+| Bonded IOPADs               |    0 |     0 |       130 |   0.00 |
+| PHY_CONTROL                 |    0 |     0 |         4 |   0.00 |
+| PHASER_REF                  |    0 |     0 |         4 |   0.00 |
+| OUT_FIFO                    |    0 |     0 |        16 |   0.00 |
+| IN_FIFO                     |    0 |     0 |        16 |   0.00 |
+| IDELAYCTRL                  |    0 |     0 |         4 |   0.00 |
+| IBUFDS                      |    0 |     0 |       121 |   0.00 |
+| PHASER_OUT/PHASER_OUT_PHY   |    0 |     0 |        16 |   0.00 |
+| PHASER_IN/PHASER_IN_PHY     |    0 |     0 |        16 |   0.00 |
+| IDELAYE2/IDELAYE2_FINEDELAY |    0 |     0 |       200 |   0.00 |
+| ILOGIC                      |    0 |     0 |       125 |   0.00 |
+| OLOGIC                      |    0 |     0 |       125 |   0.00 |
++-----------------------------+------+-------+-----------+--------+
+
+
+5. Clocking
+-----------
+
++------------+------+-------+-----------+-------+
+|  Site Type | Used | Fixed | Available | Util% |
++------------+------+-------+-----------+-------+
+| BUFGCTRL   |    1 |     0 |        32 |  3.13 |
+| BUFIO      |    0 |     0 |        16 |  0.00 |
+| MMCME2_ADV |    0 |     0 |         4 |  0.00 |
+| PLLE2_ADV  |    0 |     0 |         4 |  0.00 |
+| BUFMRCE    |    0 |     0 |         8 |  0.00 |
+| BUFHCE     |    0 |     0 |        72 |  0.00 |
+| BUFR       |    0 |     0 |        16 |  0.00 |
++------------+------+-------+-----------+-------+
+
+
+6. Specific Feature
+-------------------
+
++-------------+------+-------+-----------+-------+
+|  Site Type  | Used | Fixed | Available | Util% |
++-------------+------+-------+-----------+-------+
+| BSCANE2     |    0 |     0 |         4 |  0.00 |
+| CAPTUREE2   |    0 |     0 |         1 |  0.00 |
+| DNA_PORT    |    0 |     0 |         1 |  0.00 |
+| EFUSE_USR   |    0 |     0 |         1 |  0.00 |
+| FRAME_ECCE2 |    0 |     0 |         1 |  0.00 |
+| ICAPE2      |    0 |     0 |         2 |  0.00 |
+| STARTUPE2   |    0 |     0 |         1 |  0.00 |
+| XADC        |    0 |     0 |         1 |  0.00 |
++-------------+------+-------+-----------+-------+
+
+
+7. Primitives
+-------------
+
++----------+-------+---------------------+
+| Ref Name |  Used | Functional Category |
++----------+-------+---------------------+
+| FDRE     | 28028 |        Flop & Latch |
+| LUT4     | 17011 |                 LUT |
+| FDSE     | 16490 |        Flop & Latch |
+| LUT2     | 13691 |                 LUT |
+| LUT5     |  7040 |                 LUT |
+| LUT6     |  6803 |                 LUT |
+| CARRY4   |  4603 |          CarryLogic |
+| LUT3     |  4575 |                 LUT |
+| MUXF7    |  2244 |               MuxFx |
+| MUXF8    |  1024 |               MuxFx |
+| RAMD32   |   208 |  Distributed Memory |
+| LUT1     |   201 |                 LUT |
+| OBUF     |   189 |                  IO |
+| DSP48E1  |   153 |    Block Arithmetic |
+| IBUF     |   111 |                  IO |
+| RAMB18E1 |    62 |        Block Memory |
+| RAMS32   |    56 |  Distributed Memory |
+| RAMB36E1 |    34 |        Block Memory |
+| BUFG     |     1 |               Clock |
++----------+-------+---------------------+
+
+
+8. Black Boxes
+--------------
+
++----------+------+
+| Ref Name | Used |
++----------+------+
+
+
+9. Instantiated Netlists
+------------------------
+
++----------+------+
+| Ref Name | Used |
++----------+------+
+
++------+---------------------------------------------------+--------------------------------------------+-------+
+|      |Instance                                           |Module                                      |Cells  |
++------+---------------------------------------------------+--------------------------------------------+-------+
+|1     |top                                                |                                            | 102420|
+|2     |  AddLast_10u_U0                                   |AddLast_10u_s                               |    121|
+|3     |  C1_in_V_V_U                                      |fifo_w16_d2_A_x_x_x                         |     57|
+|4     |    U_fifo_w16_d2_A_x_x_x_ram                      |fifo_w16_d2_A_x_x_x_shiftReg_64             |     49|
+|5     |  C1_out_V_V_U                                     |fifo_w64_d2_A_x_x_x                         |    200|
+|6     |    U_fifo_w64_d2_A_x_x_x_ram                      |fifo_w64_d2_A_x_x_x_shiftReg_63             |    192|
+|7     |  C2_out_V_V_U                                     |fifo_w64_d2_A_x_x_x_0                       |    200|
+|8     |    U_fifo_w64_d2_A_x_x_x_ram                      |fifo_w64_d2_A_x_x_x_shiftReg_62             |    192|
+|9     |  C3_out_V_V_U                                     |fifo_w64_d2_A_x_x_x_1                       |    200|
+|10    |    U_fifo_w64_d2_A_x_x_x_ram                      |fifo_w64_d2_A_x_x_x_shiftReg_61             |    192|
+|11    |  C4_out_V_V_U                                     |fifo_w64_d2_A_x_x_x_2                       |    200|
+|12    |    U_fifo_w64_d2_A_x_x_x_ram                      |fifo_w64_d2_A_x_x_x_shiftReg_60             |    192|
+|13    |  ConvLayer_NOPAD_Orbi_1_U0                        |ConvLayer_NOPAD_Orbi_1                      |   5309|
+|14    |    ConvStreamGenerator_1_U0                       |ConvStreamGenerator_1                       |    209|
+|15    |      Local1_0_V_U                                 |ConvStreamGenerator_1_Local1_0_V            |     36|
+|16    |        ConvStreamGenerator_1_Local1_0_V_ram_U     |ConvStreamGenerator_1_Local1_0_V_ram        |     36|
+|17    |    Conv_MulAct_Oribital_3_U0                      |Conv_MulAct_Oribital_3                      |   4933|
+|18    |      C1_W_V_0_U                                   |Conv_MulAct_Oribital_3_C1_W_V_0             |      8|
+|19    |        Conv_MulAct_Oribital_3_C1_W_V_0_rom_U      |Conv_MulAct_Oribital_3_C1_W_V_0_rom         |      8|
+|20    |      InArray_0_0_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_52     |     12|
+|21    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_59 |     12|
+|22    |      InArray_0_1_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_53     |     12|
+|23    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_58 |     12|
+|24    |      InArray_0_2_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_54     |     12|
+|25    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_57 |     12|
+|26    |      InArray_0_3_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_55     |     22|
+|27    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_56 |     22|
+|28    |      grp_Orbital_Gemm_3_fu_1518                   |Orbital_Gemm_3                              |   2443|
+|29    |    Conv_Str_V_V_U                                 |fifo_w16_d2_A                               |     40|
+|30    |      U_fifo_w16_d2_A_ram                          |fifo_w16_d2_A_shiftReg_51                   |     32|
+|31    |    in_m_V_V_U                                     |fifo_w16_d2_A_50                            |     56|
+|32    |      U_fifo_w16_d2_A_ram                          |fifo_w16_d2_A_shiftReg                      |     48|
+|33    |    splitStream_Length_3_U0                        |splitStream_Length_3                        |     50|
+|34    |    start_for_ConvStreamGenerator_1_U0_U           |start_for_ConvStreamGenerator_1_U0          |     10|
+|35    |    start_for_Conv_MulAct_Oribital_3_U0_U          |start_for_Conv_MulAct_Oribital_3_U0         |     10|
+|36    |  ConvLayer_NOPAD_Orbi_2_U0                        |ConvLayer_NOPAD_Orbi_2                      |  21521|
+|37    |    ConvStreamGenerator_2_U0                       |ConvStreamGenerator_2                       |    331|
+|38    |      Local1_V_U                                   |ConvStreamGenerator_2_Local1_V              |      9|
+|39    |        ConvStreamGenerator_2_Local1_V_ram_U       |ConvStreamGenerator_2_Local1_V_ram          |      9|
+|40    |      top_mac_muladd_3ns_6ns_5ns_8_1_1_U49         |top_mac_muladd_3ns_6ns_5ns_8_1_1            |     21|
+|41    |        top_mac_muladd_3ns_6ns_5ns_8_1_1_DSP48_2_U |top_mac_muladd_3ns_6ns_5ns_8_1_1_DSP48_2    |     21|
+|42    |    Conv_MulAct_Oribital_2_U0                      |Conv_MulAct_Oribital_2                      |  20832|
+|43    |      C2_W_V_U                                     |Conv_MulAct_Oribital_2_C2_W_V               |     32|
+|44    |        Conv_MulAct_Oribital_2_C2_W_V_rom_U        |Conv_MulAct_Oribital_2_C2_W_V_rom           |     32|
+|45    |      InArray_0_0_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_33     |     12|
+|46    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_49 |     12|
+|47    |      InArray_0_1_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_34     |     12|
+|48    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_48 |     12|
+|49    |      InArray_0_2_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_35     |     12|
+|50    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_47 |     12|
+|51    |      InArray_0_3_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_36     |     19|
+|52    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_46 |     19|
+|53    |      InArray_1_0_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_37     |     15|
+|54    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_45 |     15|
+|55    |      InArray_1_1_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_38     |     12|
+|56    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_44 |     12|
+|57    |      InArray_1_2_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_39     |     12|
+|58    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_43 |     12|
+|59    |      InArray_1_3_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_40     |     12|
+|60    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_42 |     12|
+|61    |      grp_Orbital_Gemm_1_fu_1903                   |Orbital_Gemm_1                              |   3788|
+|62    |      grp_Orbital_Gemm_1_fu_1909                   |Orbital_Gemm_1_41                           |   8572|
+|63    |    Conv_Str_V_V_U                                 |fifo_w32_d2_A                               |     73|
+|64    |      U_fifo_w32_d2_A_ram                          |fifo_w32_d2_A_shiftReg_32                   |     64|
+|65    |    in_m_V_V_U                                     |fifo_w32_d2_A_31                            |    104|
+|66    |      U_fifo_w32_d2_A_ram                          |fifo_w32_d2_A_shiftReg                      |     96|
+|67    |    splitStream_Length_U0                          |splitStream_Length                          |    150|
+|68    |    start_for_ConvStreamGenerator_2_U0_U           |start_for_ConvStreamGenerator_2_U0          |     13|
+|69    |    start_for_Conv_MulAct_Oribital_2_U0_U          |start_for_Conv_MulAct_Oribital_2_U0         |     10|
+|70    |  ConvLayer_NOPAD_Orbi_3_U0                        |ConvLayer_NOPAD_Orbi_3                      |  31771|
+|71    |    ConvStreamGenerator_3_U0                       |ConvStreamGenerator_3                       |    330|
+|72    |      Local1_V_U                                   |ConvStreamGenerator_3_Local1_V              |     24|
+|73    |        ConvStreamGenerator_3_Local1_V_ram_U       |ConvStreamGenerator_3_Local1_V_ram          |     24|
+|74    |    Conv_MulAct_Oribital_1_U0                      |Conv_MulAct_Oribital_1                      |  31151|
+|75    |      C3_W_V_U                                     |Conv_MulAct_Oribital_1_C3_W_V               |     25|
+|76    |        Conv_MulAct_Oribital_1_C3_W_V_rom_U        |Conv_MulAct_Oribital_1_C3_W_V_rom           |     25|
+|77    |      InArray_0_0_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_23     |     12|
+|78    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_30 |     12|
+|79    |      InArray_0_1_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_24     |     12|
+|80    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_29 |     12|
+|81    |      InArray_0_2_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_25     |     13|
+|82    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_28 |     13|
+|83    |      InArray_0_3_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_26     |     23|
+|84    |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_27 |     23|
+|85    |      grp_Orbital_Gemm_fu_1993                     |Orbital_Gemm                                |  15087|
+|86    |    Conv_Str_V_V_U                                 |fifo_w16_d2_A_x                             |     41|
+|87    |      U_fifo_w16_d2_A_x_ram                        |fifo_w16_d2_A_x_shiftReg_22                 |     32|
+|88    |    in_m_V_V_U                                     |fifo_w16_d2_A_x_21                          |     56|
+|89    |      U_fifo_w16_d2_A_x_ram                        |fifo_w16_d2_A_x_shiftReg                    |     48|
+|90    |    splitStream_Length_2_U0                        |splitStream_Length_2                        |    168|
+|91    |    start_for_ConvStreamGenerator_3_U0_U           |start_for_ConvStreamGenerator_3_U0          |     12|
+|92    |    start_for_Conv_MulAct_Oribital_1_U0_U          |start_for_Conv_MulAct_Oribital_1_U0         |     10|
+|93    |  ConvLayer_NOPAD_Orbi_U0                          |ConvLayer_NOPAD_Orbi                        |  32623|
+|94    |    ConvStreamGenerator_U0                         |ConvStreamGenerator_s                       |    324|
+|95    |      Local1_V_U                                   |ConvStreamGenerator_s_Local1_V              |     23|
+|96    |        ConvStreamGenerator_s_Local1_V_ram_U       |ConvStreamGenerator_s_Local1_V_ram          |     23|
+|97    |    Conv_MulAct_Oribital_U0                        |Conv_MulAct_Oribital                        |  32016|
+|98    |      C4_W_V_U                                     |Conv_MulAct_Oribital_C4_W_V                 |     21|
+|99    |        Conv_MulAct_Oribital_C4_W_V_rom_U          |Conv_MulAct_Oribital_C4_W_V_rom             |     21|
+|100   |      InArray_0_0_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V        |     12|
+|101   |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_20 |     12|
+|102   |      InArray_0_1_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_15     |     12|
+|103   |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_19 |     12|
+|104   |      InArray_0_2_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_16     |     12|
+|105   |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram_18 |     12|
+|106   |      InArray_0_3_V_U                              |Conv_MulAct_Oribital_3_InArray_0_0_V_17     |     24|
+|107   |        Conv_MulAct_Oribital_3_InArray_0_0_V_ram_U |Conv_MulAct_Oribital_3_InArray_0_0_V_ram    |     24|
+|108   |      grp_Orbital_Gemm_2_fu_1873                   |Orbital_Gemm_2                              |  15274|
+|109   |    Conv_Str_V_V_U                                 |fifo_w16_d2_A_x_x                           |     41|
+|110   |      U_fifo_w16_d2_A_x_x_ram                      |fifo_w16_d2_A_x_x_shiftReg_14               |     32|
+|111   |    in_m_V_V_U                                     |fifo_w16_d2_A_x_x_13                        |     57|
+|112   |      U_fifo_w16_d2_A_x_x_ram                      |fifo_w16_d2_A_x_x_shiftReg                  |     48|
+|113   |    splitStream_Length_1_U0                        |splitStream_Length_1                        |    158|
+|114   |    start_for_ConvStreamGenerator_U0_U             |start_for_ConvStreamGenerator_U0            |     14|
+|115   |    start_for_Conv_MulAct_Oribital_U0_U            |start_for_Conv_MulAct_Oribital_U0           |     10|
+|116   |  DelHead_224u_U0                                  |DelHead_224u_s                              |    285|
+|117   |  EleExtend_U0                                     |EleExtend                                   |    103|
+|118   |  ExtendStreamWidth_Le_U0                          |ExtendStreamWidth_Le                        |     36|
+|119   |  F5_out_V_V_U                                     |fifo_w16_d2_A_x_x_x_3                       |     59|
+|120   |    U_fifo_w16_d2_A_x_x_x_ram                      |fifo_w16_d2_A_x_x_x_shiftReg_12             |     49|
+|121   |  F6_out_V_V_U                                     |fifo_w16_d2_A_x_x_x_4                       |     57|
+|122   |    U_fifo_w16_d2_A_x_x_x_ram                      |fifo_w16_d2_A_x_x_x_shiftReg                |     49|
+|123   |  FcnnLayer_Batch_1_U0                             |FcnnLayer_Batch_1                           |   1710|
+|124   |    F6_B_V_U                                       |FcnnLayer_Batch_1_F6_B_V                    |     14|
+|125   |      FcnnLayer_Batch_1_F6_B_V_rom_U               |FcnnLayer_Batch_1_F6_B_V_rom                |     14|
+|126   |    F6_W_V_U                                       |FcnnLayer_Batch_1_F6_W_V                    |    131|
+|127   |      FcnnLayer_Batch_1_F6_W_V_rom_U               |FcnnLayer_Batch_1_F6_W_V_rom                |    131|
+|128   |    grp_Orbital_Gemm_5_fu_413                      |Orbital_Gemm_5                              |    545|
+|129   |    result_V_U                                     |FcnnLayer_Batch_1_result_V                  |    131|
+|130   |      FcnnLayer_Batch_1_result_V_ram_U             |FcnnLayer_Batch_1_result_V_ram              |    131|
+|131   |  FcnnLayer_Batch_U0                               |FcnnLayer_Batch                             |   2499|
+|132   |    F5_B_V_U                                       |FcnnLayer_Batch_F5_B_V                      |     16|
+|133   |      FcnnLayer_Batch_F5_B_V_rom_U                 |FcnnLayer_Batch_F5_B_V_rom                  |     16|
+|134   |    F5_W_V_U                                       |FcnnLayer_Batch_F5_W_V                      |    260|
+|135   |      FcnnLayer_Batch_F5_W_V_rom_U                 |FcnnLayer_Batch_F5_W_V_rom                  |    260|
+|136   |    grp_Orbital_Gemm_4_fu_427                      |Orbital_Gemm_4                              |    808|
+|137   |    result_V_U                                     |FcnnLayer_Batch_result_V                    |     70|
+|138   |      FcnnLayer_Batch_result_V_ram_U               |FcnnLayer_Batch_result_V_ram                |     70|
+|139   |  MaxPool_IOP_1_U0                                 |MaxPool_IOP_1                               |   1136|
+|140   |    MaxPooling_Run_2_U0                            |MaxPooling_Run_2                            |    526|
+|141   |      PoolVec_V_U                                  |MaxPooling_Run_2_PoolVec_V                  |    114|
+|142   |        MaxPooling_Run_2_PoolVec_V_ram_U           |MaxPooling_Run_2_PoolVec_V_ram              |    114|
+|143   |    PoolPacks_V_V_U                                |fifo_w64_d2_A                               |    197|
+|144   |      U_fifo_w64_d2_A_ram                          |fifo_w64_d2_A_shiftReg                      |    188|
+|145   |    PoolStreamGenerator_2_U0                       |PoolStreamGenerator_2                       |    399|
+|146   |    start_for_MaxPooling_Run_2_U0_U                |start_for_MaxPooling_Run_2_U0               |     11|
+|147   |  MaxPool_IOP_2_U0                                 |MaxPool_IOP_2                               |   1144|
+|148   |    MaxPooling_Run_1_U0                            |MaxPooling_Run_1                            |    532|
+|149   |      PoolVec_V_U                                  |MaxPooling_Run_1_PoolVec_V                  |    113|
+|150   |        MaxPooling_Run_1_PoolVec_V_ram_U           |MaxPooling_Run_1_PoolVec_V_ram              |    113|
+|151   |    PoolPacks_V_V_U                                |fifo_w64_d2_A_x                             |    200|
+|152   |      U_fifo_w64_d2_A_x_ram                        |fifo_w64_d2_A_x_shiftReg                    |    192|
+|153   |    PoolStreamGenerator_1_U0                       |PoolStreamGenerator_1                       |    401|
+|154   |    start_for_MaxPooling_Run_1_U0_U                |start_for_MaxPooling_Run_1_U0               |     10|
+|155   |  MaxPool_IOP_U0                                   |MaxPool_IOP                                 |   1142|
+|156   |    MaxPooling_Run_U0                              |MaxPooling_Run                              |    605|
+|157   |      PoolVec_V_U                                  |MaxPooling_Run_PoolVec_V                    |    204|
+|158   |        MaxPooling_Run_PoolVec_V_ram_U             |MaxPooling_Run_PoolVec_V_ram                |    204|
+|159   |    PoolPacks_V_V_U                                |fifo_w64_d2_A_x_x                           |    200|
+|160   |      U_fifo_w64_d2_A_x_x_ram                      |fifo_w64_d2_A_x_x_shiftReg                  |    191|
+|161   |    PoolStreamGenerator_U0                         |PoolStreamGenerator_s                       |    324|
+|162   |      top_mux_32_64_1_1_U203                       |top_mux_32_64_1_1                           |     64|
+|163   |    start_for_MaxPooling_Run_U0_U                  |start_for_MaxPooling_Run_U0                 |     12|
+|164   |  P2_out_V_V_U                                     |fifo_w64_d2_A_x_x_x_5                       |    202|
+|165   |    U_fifo_w64_d2_A_x_x_x_ram                      |fifo_w64_d2_A_x_x_x_shiftReg_11             |    192|
+|166   |  P3_out_V_V_U                                     |fifo_w64_d2_A_x_x_x_6                       |    202|
+|167   |    U_fifo_w64_d2_A_x_x_x_ram                      |fifo_w64_d2_A_x_x_x_shiftReg_10             |    192|
+|168   |  P4_out_V_V_U                                     |fifo_w64_d2_A_x_x_x_7                       |    200|
+|169   |    U_fifo_w64_d2_A_x_x_x_ram                      |fifo_w64_d2_A_x_x_x_shiftReg                |    192|
+|170   |  ReduceStreamWidth_Le_U0                          |ReduceStreamWidth_Le                        |     44|
+|171   |  Trans_BatchStr_U0                                |Trans_BatchStr                              |    339|
+|172   |    InTemp_V_U                                     |Trans_BatchStr_InTemp_V                     |    154|
+|173   |      Trans_BatchStr_InTemp_V_ram_U                |Trans_BatchStr_InTemp_V_ram                 |    154|
+|174   |  in112_V_V_U                                      |fifo_w112_d2_A                              |    177|
+|175   |    U_fifo_w112_d2_A_ram                           |fifo_w112_d2_A_shiftReg                     |    168|
+|176   |  res8_str_V_V_U                                   |fifo_w32_d2_A_x                             |     56|
+|177   |    U_fifo_w32_d2_A_x_ram                          |fifo_w32_d2_A_x_shiftReg                    |     48|
+|178   |  start_for_AddLast_10u_U0_U                       |start_for_AddLast_10u_U0                    |      9|
+|179   |  start_for_ConvLayer_NOPAD_Orbi_1_U0_U            |start_for_ConvLayer_NOPAD_Orbi_1_U0         |     10|
+|180   |  start_for_ConvLayer_NOPAD_Orbi_2_U0_U            |start_for_ConvLayer_NOPAD_Orbi_2_U0         |     10|
+|181   |  start_for_ConvLayer_NOPAD_Orbi_3_U0_U            |start_for_ConvLayer_NOPAD_Orbi_3_U0         |      8|
+|182   |  start_for_ConvLayer_NOPAD_Orbi_U0_U              |start_for_ConvLayer_NOPAD_Orbi_U0           |      8|
+|183   |  start_for_EleExtend_U0_U                         |start_for_EleExtend_U0                      |      8|
+|184   |  start_for_ExtendStreamWidth_Le_U0_U              |start_for_ExtendStreamWidth_Le_U0           |     11|
+|185   |  start_for_FcnnLayer_Batch_1_U0_U                 |start_for_FcnnLayer_Batch_1_U0              |     10|
+|186   |  start_for_FcnnLayer_Batch_U0_U                   |start_for_FcnnLayer_Batch_U0                |      8|
+|187   |  start_for_MaxPool_IOP_1_U0_U                     |start_for_MaxPool_IOP_1_U0                  |      8|
+|188   |  start_for_MaxPool_IOP_2_U0_U                     |start_for_MaxPool_IOP_2_U0                  |     10|
+|189   |  start_for_MaxPool_IOP_U0_U                       |start_for_MaxPool_IOP_U0                    |     10|
+|190   |  start_for_ReduceStreamWidth_Le_U0_U              |start_for_ReduceStreamWidth_Le_U0           |      9|
+|191   |  start_for_Trans_BatchStr_U0_U                    |start_for_Trans_BatchStr_U0                 |     10|
+|192   |  tin_V_V_U                                        |fifo_w128_d2_A                              |    177|
+|193   |    U_fifo_w128_d2_A_ram                           |fifo_w128_d2_A_shiftReg_9                   |    168|
+|194   |  top_control_s_axi_U                              |top_control_s_axi                           |    149|
+|195   |  tout_V_V_U                                       |fifo_w128_d2_A_8                            |     57|
+|196   |    U_fifo_w128_d2_A_ram                           |fifo_w128_d2_A_shiftReg                     |     48|
++------+---------------------------------------------------+--------------------------------------------+-------+

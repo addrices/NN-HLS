@@ -1,7 +1,7 @@
 #pragma once
 #include <ap_int.h>
 
-#define ABIT 4
+#define ABIT 8
 #define WBIT 8
 
 #define C1_INCHANNEL 1
@@ -13,6 +13,7 @@
 #define C1_OUTP 2
 #define C1_SCALEBIT 7
 #define C1_STRIDE 1
+//2
 
 #define C2_INCHANNEL 16
 #define C2_OUTCHANNEL 32
@@ -23,6 +24,7 @@
 #define C2_OUTP 8
 #define C2_SCALEBIT 8
 #define C2_STRIDE 1
+//64
 
 #define C3_INCHANNEL 32
 #define C3_OUTCHANNEL 64
@@ -33,6 +35,7 @@
 #define C3_OUTP 8
 #define C3_SCALEBIT 9
 #define C3_STRIDE 1
+//32
 
 #define C4_INCHANNEL 64
 #define C4_OUTCHANNEL 64
@@ -43,6 +46,7 @@
 #define C4_OUTP 4
 #define C4_SCALEBIT 8
 #define C4_STRIDE 1
+//8
 
 #define P2_CHANNEL 32
 #define P2_SIZE 24

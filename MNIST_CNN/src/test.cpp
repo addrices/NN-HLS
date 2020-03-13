@@ -258,6 +258,6 @@ void test(){
 
 }
 int main(){
-//	test_top();
+	test_top();
 	test();
 }
