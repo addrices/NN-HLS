@@ -6,19 +6,25 @@
 #include "util.h"
 #include "Padding.h"
 
+// template<unsigned ABit,unsigned WBit,unsigned MBit>
+// ap_int<MBit> Mul(ap_int<WBit> w,ap_uint<ABit> a){
+// 	ap_int<MBit> r = w*a;
+// #pragma HLS resource variable=r core=Mul_LUT
+// 	return r;
+// }
+
 template<unsigned P,unsigned ABit,unsigned WBit,unsigned MBit>
 ap_int<MBit> Dot(ap_int<P*WBit> weights,ap_int<P*ABit> in){
 	ap_int<MBit> acc = 0;
-
-	for (unsigned p = 0; p < P; p++) {
+	for(unsigned p = 0; p < P; p++) {
 #pragma HLS UNROLL
 		ap_int<MBit> result;
 		ap_int<WBit> temp_w = weights( (p+1)*WBit-1, p*WBit );
 		ap_uint<ABit> temp_in = in( (p+1)*ABit-1, p*ABit );
-		result = temp_w*temp_in;
+		result = temp_w * temp_in;
+#pragma HLS resource variable=result core=Mul_LUT
 		acc += result;
 	}
-
 	return acc;
 }
 
@@ -120,6 +126,18 @@ void Conv_MulAct_ScaleBit(hls::stream<ap_uint<ABit*InP> >& in,hls::stream<ap_uin
 						unsigned NChannel = n*OutP+a;
 						unsigned OP = n*OutP+a;	//4 3 0
 						OutSinglePix[NChannel] += Dot<InP,ABit,WBit,MBit>(Weight[WeightOffset][a],InTemp);
+//						if(InChannel == 16){
+//							for(int in = 0;in < InP;in++){
+//								cout << Weight[WeightOffset][a]((in+1)*WBit-1,in*WBit) << " ";
+//							}
+//							cout << endl;
+//							for(int in = 0;in < InP;in++){
+//								cout << InTemp((in+1)*ABit-1,in*ABit) << " ";
+//							}
+//							cout << endl;
+//							cout << NChannel << " " << OutSinglePix[NChannel];
+//							cout << endl << endl;
+//						}
 					}
 					if(m == InPack-1 && j == KSize*KSize-1){
 						for(unsigned a = 0;a < OutP;a++){
@@ -129,6 +147,12 @@ void Conv_MulAct_ScaleBit(hls::stream<ap_uint<ABit*InP> >& in,hls::stream<ap_uin
 					}
 					if(m == InPack-1 && j == KSize*KSize-1){
 						out.write(OutTemp);
+//						if(InChannel == 16){
+//							for(int in = 0;in < OutP;in++){
+//								cout << OutTemp((in+1)*ABit-1,in*ABit) << " ";
+//							}
+//							cout << endl;
+//						}
 					}
 				}
 			}

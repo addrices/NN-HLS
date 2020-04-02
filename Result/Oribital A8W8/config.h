@@ -1,7 +1,7 @@
 #pragma once
 #include <ap_int.h>
 
-#define ABIT 4
+#define ABIT 8
 #define WBIT 8
 
 #define C1_INCHANNEL 1

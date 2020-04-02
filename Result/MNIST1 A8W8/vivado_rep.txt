@@ -1,0 +1,569 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+-------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2018.3 (lin64) Build 2405991 Thu Dec  6 23:36:41 MST 2018
+| Date         : Wed Mar 18 13:40:44 2020
+| Host         : Cu running 64-bit Ubuntu 18.04.3 LTS
+| Command      : report_utilization -file top_utilization_synth.rpt -pb top_utilization_synth.pb
+| Design       : top
+| Device       : 7z020clg400-1
+| Design State : Synthesized
+-------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Slice Logic
+1.1 Summary of Registers by Type
+2. Memory
+3. DSP
+4. IO and GT Specific
+5. Clocking
+6. Specific Feature
+7. Primitives
+8. Black Boxes
+9. Instantiated Netlists
+
+1. Slice Logic
+--------------
+
++----------------------------+-------+-------+-----------+-------+
+|          Site Type         |  Used | Fixed | Available | Util% |
++----------------------------+-------+-------+-----------+-------+
+| Slice LUTs*                | 35762 |     0 |     53200 | 67.22 |
+|   LUT as Logic             | 35738 |     0 |     53200 | 67.18 |
+|   LUT as Memory            |    24 |     0 |     17400 |  0.14 |
+|     LUT as Distributed RAM |    24 |     0 |           |       |
+|     LUT as Shift Register  |     0 |     0 |           |       |
+| Slice Registers            | 40875 |     0 |    106400 | 38.42 |
+|   Register as Flip Flop    | 40875 |     0 |    106400 | 38.42 |
+|   Register as Latch        |     0 |     0 |    106400 |  0.00 |
+| F7 Muxes                   |  1494 |     0 |     26600 |  5.62 |
+| F8 Muxes                   |   187 |     0 |     13300 |  1.41 |
++----------------------------+-------+-------+-----------+-------+
+* Warning! The Final LUT count, after physical optimizations and full implementation, is typically lower. Run opt_design after synthesis, if not already completed, for a more realistic count.
+
+
+1.1 Summary of Registers by Type
+--------------------------------
+
++-------+--------------+-------------+--------------+
+| Total | Clock Enable | Synchronous | Asynchronous |
++-------+--------------+-------------+--------------+
+| 0     |            _ |           - |            - |
+| 0     |            _ |           - |          Set |
+| 0     |            _ |           - |        Reset |
+| 0     |            _ |         Set |            - |
+| 0     |            _ |       Reset |            - |
+| 0     |          Yes |           - |            - |
+| 0     |          Yes |           - |          Set |
+| 0     |          Yes |           - |        Reset |
+| 340   |          Yes |         Set |            - |
+| 40535 |          Yes |       Reset |            - |
++-------+--------------+-------------+--------------+
+
+
+2. Memory
+---------
+
++-------------------+------+-------+-----------+-------+
+|     Site Type     | Used | Fixed | Available | Util% |
++-------------------+------+-------+-----------+-------+
+| Block RAM Tile    | 44.5 |     0 |       140 | 31.79 |
+|   RAMB36/FIFO*    |   24 |     0 |       140 | 17.14 |
+|     RAMB36E1 only |   24 |       |           |       |
+|   RAMB18          |   41 |     0 |       280 | 14.64 |
+|     RAMB18E1 only |   41 |       |           |       |
++-------------------+------+-------+-----------+-------+
+* Note: Each Block RAM Tile only has one FIFO logic available and therefore can accommodate only one FIFO36E1 or one FIFO18E1. However, if a FIFO18E1 occupies a Block RAM Tile, that tile can still accommodate a RAMB18E1
+
+
+3. DSP
+------
+
++----------------+------+-------+-----------+-------+
+|    Site Type   | Used | Fixed | Available | Util% |
++----------------+------+-------+-----------+-------+
+| DSPs           |  158 |     0 |       220 | 71.82 |
+|   DSP48E1 only |  158 |       |           |       |
++----------------+------+-------+-----------+-------+
+
+
+4. IO and GT Specific
+---------------------
+
++-----------------------------+------+-------+-----------+--------+
+|          Site Type          | Used | Fixed | Available |  Util% |
++-----------------------------+------+-------+-----------+--------+
+| Bonded IOB                  |  356 |     0 |       125 | 284.80 |
+| Bonded IPADs                |    0 |     0 |         2 |   0.00 |
+| Bonded IOPADs               |    0 |     0 |       130 |   0.00 |
+| PHY_CONTROL                 |    0 |     0 |         4 |   0.00 |
+| PHASER_REF                  |    0 |     0 |         4 |   0.00 |
+| OUT_FIFO                    |    0 |     0 |        16 |   0.00 |
+| IN_FIFO                     |    0 |     0 |        16 |   0.00 |
+| IDELAYCTRL                  |    0 |     0 |         4 |   0.00 |
+| IBUFDS                      |    0 |     0 |       121 |   0.00 |
+| PHASER_OUT/PHASER_OUT_PHY   |    0 |     0 |        16 |   0.00 |
+| PHASER_IN/PHASER_IN_PHY     |    0 |     0 |        16 |   0.00 |
+| IDELAYE2/IDELAYE2_FINEDELAY |    0 |     0 |       200 |   0.00 |
+| ILOGIC                      |    0 |     0 |       125 |   0.00 |
+| OLOGIC                      |    0 |     0 |       125 |   0.00 |
++-----------------------------+------+-------+-----------+--------+
+
+
+5. Clocking
+-----------
+
++------------+------+-------+-----------+-------+
+|  Site Type | Used | Fixed | Available | Util% |
++------------+------+-------+-----------+-------+
+| BUFGCTRL   |    1 |     0 |        32 |  3.13 |
+| BUFIO      |    0 |     0 |        16 |  0.00 |
+| MMCME2_ADV |    0 |     0 |         4 |  0.00 |
+| PLLE2_ADV  |    0 |     0 |         4 |  0.00 |
+| BUFMRCE    |    0 |     0 |         8 |  0.00 |
+| BUFHCE     |    0 |     0 |        72 |  0.00 |
+| BUFR       |    0 |     0 |        16 |  0.00 |
++------------+------+-------+-----------+-------+
+
+
+6. Specific Feature
+-------------------
+
++-------------+------+-------+-----------+-------+
+|  Site Type  | Used | Fixed | Available | Util% |
++-------------+------+-------+-----------+-------+
+| BSCANE2     |    0 |     0 |         4 |  0.00 |
+| CAPTUREE2   |    0 |     0 |         1 |  0.00 |
+| DNA_PORT    |    0 |     0 |         1 |  0.00 |
+| EFUSE_USR   |    0 |     0 |         1 |  0.00 |
+| FRAME_ECCE2 |    0 |     0 |         1 |  0.00 |
+| ICAPE2      |    0 |     0 |         2 |  0.00 |
+| STARTUPE2   |    0 |     0 |         1 |  0.00 |
+| XADC        |    0 |     0 |         1 |  0.00 |
++-------------+------+-------+-----------+-------+
+
+
+7. Primitives
+-------------
+
++----------+-------+---------------------+
+| Ref Name |  Used | Functional Category |
++----------+-------+---------------------+
+| FDRE     | 40535 |        Flop & Latch |
+| LUT3     | 16449 |                 LUT |
+| LUT6     | 11027 |                 LUT |
+| LUT5     |  7692 |                 LUT |
+| LUT4     |  4729 |                 LUT |
+| LUT2     |  4161 |                 LUT |
+| CARRY4   |  2076 |          CarryLogic |
+| MUXF7    |  1494 |               MuxFx |
+| LUT1     |   571 |                 LUT |
+| FDSE     |   340 |        Flop & Latch |
+| OBUF     |   189 |                  IO |
+| MUXF8    |   187 |               MuxFx |
+| IBUF     |   167 |                  IO |
+| DSP48E1  |   158 |    Block Arithmetic |
+| RAMB18E1 |    41 |        Block Memory |
+| RAMB36E1 |    24 |        Block Memory |
+| RAMS32   |    16 |  Distributed Memory |
+| RAMS64E  |     8 |  Distributed Memory |
+| BUFG     |     1 |               Clock |
++----------+-------+---------------------+
+
+
+8. Black Boxes
+--------------
+
++----------+------+
+| Ref Name | Used |
++----------+------+
+
+
+9. Instantiated Netlists
+------------------------
+
++----------+------+
+| Ref Name | Used |
++----------+------+
+
+
++------+-----------------------------------------------------+----------------------------------------------+------+
+|      |Instance                                             |Module                                        |Cells |
++------+-----------------------------------------------------+----------------------------------------------+------+
+|1     |top                                                  |                                              | 89865|
+|2     |  In8_V_V_U                                          |fifo_w8_d2_A_x_3                              |    31|
+|3     |    U_fifo_w8_d2_A_x_ram                             |fifo_w8_d2_A_x_shiftReg                       |    24|
+|4     |  reps_c2_U                                          |fifo_w32_d2_A_x_x_x_x_x_x_x_12                |   105|
+|5     |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_32       |    96|
+|6     |  C4_out_V_V_U                                       |fifo_w64_d2_A_x_x_x_x_x_1                     |   200|
+|7     |    U_fifo_w64_d2_A_x_x_x_x_x_ram                    |fifo_w64_d2_A_x_x_x_x_x_shiftReg_170          |   192|
+|8     |  F5_out_V_V_U                                       |fifo_w64_d2_A_x_x_x_x_x_2                     |   201|
+|9     |    U_fifo_w64_d2_A_x_x_x_x_x_ram                    |fifo_w64_d2_A_x_x_x_x_x_shiftReg_64           |   192|
+|10    |  AddLast_1u_U0                                      |AddLast_1u_s                                  |   425|
+|11    |  C1_in_V_V_U                                        |fifo_w8_d2_A_x                                |    33|
+|12    |    U_fifo_w8_d2_A_x_ram                             |fifo_w8_d2_A_x_shiftReg_174                   |    24|
+|13    |  C1_out_V_V_U                                       |fifo_w128_d2_A_x                              |   393|
+|14    |    U_fifo_w128_d2_A_x_ram                           |fifo_w128_d2_A_x_shiftReg_173                 |   384|
+|15    |  C2_out_V_V_U                                       |fifo_w64_d2_A_x_x_x_x_x                       |   201|
+|16    |    U_fifo_w64_d2_A_x_x_x_x_x_ram                    |fifo_w64_d2_A_x_x_x_x_x_shiftReg_172          |   193|
+|17    |  C3_out_V_V_U                                       |fifo_w64_d2_A_x_x_x_x_x_0                     |   201|
+|18    |    U_fifo_w64_d2_A_x_x_x_x_x_ram                    |fifo_w64_d2_A_x_x_x_x_x_shiftReg_171          |   193|
+|19    |  ConvLayer_NOPAD_IOP_1_U0                           |ConvLayer_NOPAD_IOP_1                         |  2820|
+|20    |    ConvStreamGenerator_1_U0                         |ConvStreamGenerator_1                         |   391|
+|21    |      Local1_0_V_U                                   |ConvStreamGenerator_1_Local1_0_V              |    92|
+|22    |        ConvStreamGenerator_1_Local1_0_V_ram_U       |ConvStreamGenerator_1_Local1_0_V_ram          |    92|
+|23    |    Conv_MulAct_ScaleBit_2_U0                        |Conv_MulAct_ScaleBit_2                        |  1203|
+|24    |      C1_B_V_U                                       |Conv_MulAct_ScaleBit_2_C1_B_V                 |   320|
+|25    |        Conv_MulAct_ScaleBit_2_C1_B_V_rom_U          |Conv_MulAct_ScaleBit_2_C1_B_V_rom             |   320|
+|26    |    Conv_Str_V_V_U                                   |fifo_w8_d2_A                                  |    35|
+|27    |      U_fifo_w8_d2_A_ram                             |fifo_w8_d2_A_shiftReg_169                     |    24|
+|28    |    OutPStream_V_V_U                                 |fifo_w128_d2_A                                |   398|
+|29    |      U_fifo_w128_d2_A_ram                           |fifo_w128_d2_A_shiftReg                       |   384|
+|30    |    in_m_V_V_U                                       |fifo_w8_d2_A_164                              |    32|
+|31    |      U_fifo_w8_d2_A_ram                             |fifo_w8_d2_A_shiftReg                         |    24|
+|32    |    mergeStream_Length_3_U0                          |mergeStream_Length_3                          |   194|
+|33    |    reps_c1_i_U                                      |fifo_w32_d2_A                                 |    98|
+|34    |      U_fifo_w32_d2_A_ram                            |fifo_w32_d2_A_shiftReg_168                    |    90|
+|35    |    reps_c2_i_U                                      |fifo_w32_d2_A_165                             |    98|
+|36    |      U_fifo_w32_d2_A_ram                            |fifo_w32_d2_A_shiftReg_167                    |    90|
+|37    |    reps_c_i_U                                       |fifo_w32_d2_A_166                             |   105|
+|38    |      U_fifo_w32_d2_A_ram                            |fifo_w32_d2_A_shiftReg                        |    97|
+|39    |    splitStream_Length34_U0                          |splitStream_Length34                          |   168|
+|40    |    start_for_ConvStreamGenerator_1_U0_U             |start_for_ConvStreamGenerator_1_U0            |    12|
+|41    |    start_for_Conv_MulAct_ScaleBit_2_U0_U            |start_for_Conv_MulAct_ScaleBit_2_U0           |    13|
+|42    |    start_for_mergeStream_Length_3_U0_U              |start_for_mergeStream_Length_3_U0             |    11|
+|43    |  ConvLayer_NOPAD_IOP_2_U0                           |ConvLayer_NOPAD_IOP_2                         | 15883|
+|44    |    ConvStreamGenerator_2_U0                         |ConvStreamGenerator_2                         |   444|
+|45    |      Local1_V_U                                     |ConvStreamGenerator_2_Local1_V                |    24|
+|46    |        ConvStreamGenerator_2_Local1_V_ram_U         |ConvStreamGenerator_2_Local1_V_ram            |    24|
+|47    |      top_mac_muladd_3ns_6ns_5ns_8_1_1_U91           |top_mac_muladd_3ns_6ns_5ns_8_1_1              |    15|
+|48    |        top_mac_muladd_3ns_6ns_5ns_8_1_1_DSP48_2_U   |top_mac_muladd_3ns_6ns_5ns_8_1_1_DSP48_2      |    15|
+|49    |    Conv_MulAct_ScaleBit_3_U0                        |Conv_MulAct_ScaleBit_3                        | 14071|
+|50    |      C2_B_V_U                                       |Conv_MulAct_ScaleBit_3_C2_B_V                 |   742|
+|51    |        Conv_MulAct_ScaleBit_3_C2_B_V_rom_U          |Conv_MulAct_ScaleBit_3_C2_B_V_rom             |   742|
+|52    |      C2_W_V_0_U                                     |Conv_MulAct_ScaleBit_3_C2_W_V_0               |     2|
+|53    |        Conv_MulAct_ScaleBit_3_C2_W_V_0_rom_U        |Conv_MulAct_ScaleBit_3_C2_W_V_0_rom           |     2|
+|54    |      C2_W_V_1_U                                     |Conv_MulAct_ScaleBit_3_C2_W_V_1               |     2|
+|55    |        Conv_MulAct_ScaleBit_3_C2_W_V_1_rom_U        |Conv_MulAct_ScaleBit_3_C2_W_V_1_rom           |     2|
+|56    |      C2_W_V_2_U                                     |Conv_MulAct_ScaleBit_3_C2_W_V_2               |     2|
+|57    |        Conv_MulAct_ScaleBit_3_C2_W_V_2_rom_U        |Conv_MulAct_ScaleBit_3_C2_W_V_2_rom           |     2|
+|58    |      C2_W_V_3_U                                     |Conv_MulAct_ScaleBit_3_C2_W_V_3               |     2|
+|59    |        Conv_MulAct_ScaleBit_3_C2_W_V_3_rom_U        |Conv_MulAct_ScaleBit_3_C2_W_V_3_rom           |     2|
+|60    |      C2_W_V_4_U                                     |Conv_MulAct_ScaleBit_3_C2_W_V_4               |     2|
+|61    |        Conv_MulAct_ScaleBit_3_C2_W_V_4_rom_U        |Conv_MulAct_ScaleBit_3_C2_W_V_4_rom           |     2|
+|62    |      C2_W_V_5_U                                     |Conv_MulAct_ScaleBit_3_C2_W_V_5               |     2|
+|63    |        Conv_MulAct_ScaleBit_3_C2_W_V_5_rom_U        |Conv_MulAct_ScaleBit_3_C2_W_V_5_rom           |     2|
+|64    |      C2_W_V_6_U                                     |Conv_MulAct_ScaleBit_3_C2_W_V_6               |     2|
+|65    |        Conv_MulAct_ScaleBit_3_C2_W_V_6_rom_U        |Conv_MulAct_ScaleBit_3_C2_W_V_6_rom           |     2|
+|66    |      C2_W_V_7_U                                     |Conv_MulAct_ScaleBit_3_C2_W_V_7               |     8|
+|67    |        Conv_MulAct_ScaleBit_3_C2_W_V_7_rom_U        |Conv_MulAct_ScaleBit_3_C2_W_V_7_rom           |     8|
+|68    |      grp_Dot_8u_8u_8u_23u_s_fu_6128                 |Dot_8u_8u_8u_23u_s                            |    94|
+|69    |        top_mac_muladd_8ns_8s_17s_18_1_0_U102        |top_mac_muladd_8ns_8s_17s_18_1_0_160          |     3|
+|70    |          top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_U |top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_163  |     3|
+|71    |        top_mac_muladd_8ns_8s_18s_19_1_0_U101        |top_mac_muladd_8ns_8s_18s_19_1_0_161          |    44|
+|72    |          top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_U |top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_162  |    44|
+|73    |      grp_Dot_8u_8u_8u_23u_s_fu_6134                 |Dot_8u_8u_8u_23u_s_116                        |    93|
+|74    |        top_mac_muladd_8ns_8s_17s_18_1_0_U102        |top_mac_muladd_8ns_8s_17s_18_1_0_156          |     3|
+|75    |          top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_U |top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_159  |     3|
+|76    |        top_mac_muladd_8ns_8s_18s_19_1_0_U101        |top_mac_muladd_8ns_8s_18s_19_1_0_157          |    43|
+|77    |          top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_U |top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_158  |    43|
+|78    |      grp_Dot_8u_8u_8u_23u_s_fu_6140                 |Dot_8u_8u_8u_23u_s_117                        |    93|
+|79    |        top_mac_muladd_8ns_8s_17s_18_1_0_U102        |top_mac_muladd_8ns_8s_17s_18_1_0_152          |     3|
+|80    |          top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_U |top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_155  |     3|
+|81    |        top_mac_muladd_8ns_8s_18s_19_1_0_U101        |top_mac_muladd_8ns_8s_18s_19_1_0_153          |    43|
+|82    |          top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_U |top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_154  |    43|
+|83    |      grp_Dot_8u_8u_8u_23u_s_fu_6146                 |Dot_8u_8u_8u_23u_s_118                        |    93|
+|84    |        top_mac_muladd_8ns_8s_17s_18_1_0_U102        |top_mac_muladd_8ns_8s_17s_18_1_0_148          |     3|
+|85    |          top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_U |top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_151  |     3|
+|86    |        top_mac_muladd_8ns_8s_18s_19_1_0_U101        |top_mac_muladd_8ns_8s_18s_19_1_0_149          |    43|
+|87    |          top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_U |top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_150  |    43|
+|88    |      grp_Dot_8u_8u_8u_23u_s_fu_6152                 |Dot_8u_8u_8u_23u_s_119                        |    93|
+|89    |        top_mac_muladd_8ns_8s_17s_18_1_0_U102        |top_mac_muladd_8ns_8s_17s_18_1_0_144          |     3|
+|90    |          top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_U |top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_147  |     3|
+|91    |        top_mac_muladd_8ns_8s_18s_19_1_0_U101        |top_mac_muladd_8ns_8s_18s_19_1_0_145          |    43|
+|92    |          top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_U |top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_146  |    43|
+|93    |      grp_Dot_8u_8u_8u_23u_s_fu_6158                 |Dot_8u_8u_8u_23u_s_120                        |    93|
+|94    |        top_mac_muladd_8ns_8s_17s_18_1_0_U102        |top_mac_muladd_8ns_8s_17s_18_1_0_140          |     3|
+|95    |          top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_U |top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_143  |     3|
+|96    |        top_mac_muladd_8ns_8s_18s_19_1_0_U101        |top_mac_muladd_8ns_8s_18s_19_1_0_141          |    43|
+|97    |          top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_U |top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_142  |    43|
+|98    |      grp_Dot_8u_8u_8u_23u_s_fu_6164                 |Dot_8u_8u_8u_23u_s_121                        |    93|
+|99    |        top_mac_muladd_8ns_8s_17s_18_1_0_U102        |top_mac_muladd_8ns_8s_17s_18_1_0_136          |     3|
+|100   |          top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_U |top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_139  |     3|
+|101   |        top_mac_muladd_8ns_8s_18s_19_1_0_U101        |top_mac_muladd_8ns_8s_18s_19_1_0_137          |    43|
+|102   |          top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_U |top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_138  |    43|
+|103   |      grp_Dot_8u_8u_8u_23u_s_fu_6170                 |Dot_8u_8u_8u_23u_s_122                        |    97|
+|104   |        top_mac_muladd_8ns_8s_17s_18_1_0_U102        |top_mac_muladd_8ns_8s_17s_18_1_0              |     3|
+|105   |          top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6_U |top_mac_muladd_8ns_8s_17s_18_1_0_DSP48_6      |     3|
+|106   |        top_mac_muladd_8ns_8s_18s_19_1_0_U101        |top_mac_muladd_8ns_8s_18s_19_1_0              |    45|
+|107   |          top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5_U |top_mac_muladd_8ns_8s_18s_19_1_0_DSP48_5      |    45|
+|108   |      top_mux_42_23_1_1_U110                         |top_mux_42_23_1_1                             |    29|
+|109   |      top_mux_42_23_1_1_U111                         |top_mux_42_23_1_1_123                         |    29|
+|110   |      top_mux_42_23_1_1_U112                         |top_mux_42_23_1_1_124                         |    29|
+|111   |      top_mux_42_23_1_1_U113                         |top_mux_42_23_1_1_125                         |    29|
+|112   |      top_mux_42_23_1_1_U114                         |top_mux_42_23_1_1_126                         |    29|
+|113   |      top_mux_42_23_1_1_U115                         |top_mux_42_23_1_1_127                         |    29|
+|114   |      top_mux_42_23_1_1_U116                         |top_mux_42_23_1_1_128                         |    29|
+|115   |      top_mux_42_23_1_1_U117                         |top_mux_42_23_1_1_129                         |    99|
+|116   |      top_mux_42_23_1_1_U118                         |top_mux_42_23_1_1_130                         |    99|
+|117   |      top_mux_42_23_1_1_U119                         |top_mux_42_23_1_1_131                         |    99|
+|118   |      top_mux_42_23_1_1_U120                         |top_mux_42_23_1_1_132                         |    99|
+|119   |      top_mux_42_23_1_1_U121                         |top_mux_42_23_1_1_133                         |    99|
+|120   |      top_mux_42_23_1_1_U122                         |top_mux_42_23_1_1_134                         |    99|
+|121   |      top_mux_42_23_1_1_U123                         |top_mux_42_23_1_1_135                         |    99|
+|122   |    Conv_Str_V_V_U                                   |fifo_w64_d2_A                                 |   136|
+|123   |      U_fifo_w64_d2_A_ram                            |fifo_w64_d2_A_shiftReg_115                    |   128|
+|124   |    OutPStream_V_V_U                                 |fifo_w64_d2_A_108                             |   200|
+|125   |      U_fifo_w64_d2_A_ram                            |fifo_w64_d2_A_shiftReg_114                    |   192|
+|126   |    in_m_V_V_U                                       |fifo_w64_d2_A_109                             |   200|
+|127   |      U_fifo_w64_d2_A_ram                            |fifo_w64_d2_A_shiftReg                        |   192|
+|128   |    mergeStream_Length_1_U0                          |mergeStream_Length_1                          |   107|
+|129   |    reps_c1_i_U                                      |fifo_w32_d2_A_x                               |    60|
+|130   |      U_fifo_w32_d2_A_x_ram                          |fifo_w32_d2_A_x_shiftReg_113                  |    52|
+|131   |    reps_c2_i_U                                      |fifo_w32_d2_A_x_110                           |    98|
+|132   |      U_fifo_w32_d2_A_x_ram                          |fifo_w32_d2_A_x_shiftReg_112                  |    90|
+|133   |    reps_c_i_U                                       |fifo_w32_d2_A_x_111                           |    75|
+|134   |      U_fifo_w32_d2_A_x_ram                          |fifo_w32_d2_A_x_shiftReg                      |    67|
+|135   |    splitStream_Length34_1_U0                        |splitStream_Length34_1                        |   419|
+|136   |    start_for_ConvStreamGenerator_2_U0_U             |start_for_ConvStreamGenerator_2_U0            |    12|
+|137   |    start_for_Conv_MulAct_ScaleBit_3_U0_U            |start_for_Conv_MulAct_ScaleBit_3_U0           |    10|
+|138   |    start_for_mergeStream_Length_1_U0_U              |start_for_mergeStream_Length_1_U0             |     9|
+|139   |  ConvLayer_NOPAD_IOP_3_U0                           |ConvLayer_NOPAD_IOP_3                         | 27184|
+|140   |    ConvStreamGenerator_3_U0                         |ConvStreamGenerator_3                         |   416|
+|141   |      Local1_V_U                                     |ConvStreamGenerator_3_Local1_V                |    15|
+|142   |        ConvStreamGenerator_3_Local1_V_ram_U         |ConvStreamGenerator_3_Local1_V_ram            |    15|
+|143   |    Conv_MulAct_ScaleBit_1_U0                        |Conv_MulAct_ScaleBit_1                        | 25615|
+|144   |      C3_B_V_U                                       |Conv_MulAct_ScaleBit_1_C3_B_V                 |  1543|
+|145   |        Conv_MulAct_ScaleBit_1_C3_B_V_rom_U          |Conv_MulAct_ScaleBit_1_C3_B_V_rom             |  1543|
+|146   |      C3_W_V_0_U                                     |Conv_MulAct_ScaleBit_1_C3_W_V_0               |     1|
+|147   |        Conv_MulAct_ScaleBit_1_C3_W_V_0_rom_U        |Conv_MulAct_ScaleBit_1_C3_W_V_0_rom           |     1|
+|148   |      C3_W_V_1_U                                     |Conv_MulAct_ScaleBit_1_C3_W_V_1               |     6|
+|149   |        Conv_MulAct_ScaleBit_1_C3_W_V_1_rom_U        |Conv_MulAct_ScaleBit_1_C3_W_V_1_rom           |     6|
+|150   |      C3_W_V_2_U                                     |Conv_MulAct_ScaleBit_1_C3_W_V_2               |     1|
+|151   |        Conv_MulAct_ScaleBit_1_C3_W_V_2_rom_U        |Conv_MulAct_ScaleBit_1_C3_W_V_2_rom           |     1|
+|152   |      C3_W_V_3_U                                     |Conv_MulAct_ScaleBit_1_C3_W_V_3               |     1|
+|153   |        Conv_MulAct_ScaleBit_1_C3_W_V_3_rom_U        |Conv_MulAct_ScaleBit_1_C3_W_V_3_rom           |     1|
+|154   |      C3_W_V_4_U                                     |Conv_MulAct_ScaleBit_1_C3_W_V_4               |     1|
+|155   |        Conv_MulAct_ScaleBit_1_C3_W_V_4_rom_U        |Conv_MulAct_ScaleBit_1_C3_W_V_4_rom           |     1|
+|156   |      C3_W_V_5_U                                     |Conv_MulAct_ScaleBit_1_C3_W_V_5               |     1|
+|157   |        Conv_MulAct_ScaleBit_1_C3_W_V_5_rom_U        |Conv_MulAct_ScaleBit_1_C3_W_V_5_rom           |     1|
+|158   |      C3_W_V_6_U                                     |Conv_MulAct_ScaleBit_1_C3_W_V_6               |     1|
+|159   |        Conv_MulAct_ScaleBit_1_C3_W_V_6_rom_U        |Conv_MulAct_ScaleBit_1_C3_W_V_6_rom           |     1|
+|160   |      C3_W_V_7_U                                     |Conv_MulAct_ScaleBit_1_C3_W_V_7               |     1|
+|161   |        Conv_MulAct_ScaleBit_1_C3_W_V_7_rom_U        |Conv_MulAct_ScaleBit_1_C3_W_V_7_rom           |     1|
+|162   |      grp_Dot_4u_8u_8u_24u_s_fu_18844                |Dot_4u_8u_8u_24u_s                            |   221|
+|163   |      grp_Dot_4u_8u_8u_24u_s_fu_18850                |Dot_4u_8u_8u_24u_s_88                         |  1463|
+|164   |      grp_Dot_4u_8u_8u_24u_s_fu_18856                |Dot_4u_8u_8u_24u_s_89                         |   447|
+|165   |      grp_Dot_4u_8u_8u_24u_s_fu_18862                |Dot_4u_8u_8u_24u_s_90                         |   447|
+|166   |      grp_Dot_4u_8u_8u_24u_s_fu_18868                |Dot_4u_8u_8u_24u_s_91                         |   198|
+|167   |      grp_Dot_4u_8u_8u_24u_s_fu_18874                |Dot_4u_8u_8u_24u_s_92                         |   198|
+|168   |      grp_Dot_4u_8u_8u_24u_s_fu_18880                |Dot_4u_8u_8u_24u_s_93                         |   198|
+|169   |      grp_Dot_4u_8u_8u_24u_s_fu_18886                |Dot_4u_8u_8u_24u_s_94                         |   449|
+|170   |      top_mux_83_24_1_1_U187                         |top_mux_83_24_1_1                             |   168|
+|171   |      top_mux_83_24_1_1_U188                         |top_mux_83_24_1_1_95                          |   168|
+|172   |      top_mux_83_24_1_1_U189                         |top_mux_83_24_1_1_96                          |   168|
+|173   |      top_mux_83_24_1_1_U190                         |top_mux_83_24_1_1_97                          |   168|
+|174   |      top_mux_83_24_1_1_U191                         |top_mux_83_24_1_1_98                          |   168|
+|175   |      top_mux_83_24_1_1_U192                         |top_mux_83_24_1_1_99                          |   168|
+|176   |      top_mux_83_24_1_1_U193                         |top_mux_83_24_1_1_100                         |   168|
+|177   |      top_mux_83_24_1_1_U194                         |top_mux_83_24_1_1_101                         |    72|
+|178   |      top_mux_83_24_1_1_U195                         |top_mux_83_24_1_1_102                         |    72|
+|179   |      top_mux_83_24_1_1_U196                         |top_mux_83_24_1_1_103                         |    72|
+|180   |      top_mux_83_24_1_1_U197                         |top_mux_83_24_1_1_104                         |    72|
+|181   |      top_mux_83_24_1_1_U198                         |top_mux_83_24_1_1_105                         |    72|
+|182   |      top_mux_83_24_1_1_U199                         |top_mux_83_24_1_1_106                         |    72|
+|183   |      top_mux_83_24_1_1_U200                         |top_mux_83_24_1_1_107                         |    72|
+|184   |    Conv_Str_V_V_U                                   |fifo_w32_d2_A_x_x_x                           |    73|
+|185   |      U_fifo_w32_d2_A_x_x_x_ram                      |fifo_w32_d2_A_x_x_x_shiftReg_87               |    64|
+|186   |    OutPStream_V_V_U                                 |fifo_w64_d2_A_x_x                             |   200|
+|187   |      U_fifo_w64_d2_A_x_x_ram                        |fifo_w64_d2_A_x_x_shiftReg                    |   192|
+|188   |    in_m_V_V_U                                       |fifo_w32_d2_A_x_x_x_80                        |   104|
+|189   |      U_fifo_w32_d2_A_x_x_x_ram                      |fifo_w32_d2_A_x_x_x_shiftReg_86               |    96|
+|190   |    mergeStream_Length_U0                            |mergeStream_Length                            |   155|
+|191   |    reps_c1_i_U                                      |fifo_w32_d2_A_x_x_x_81                        |    99|
+|192   |      U_fifo_w32_d2_A_x_x_x_ram                      |fifo_w32_d2_A_x_x_x_shiftReg_85               |    90|
+|193   |    reps_c2_i_U                                      |fifo_w32_d2_A_x_x_x_82                        |    89|
+|194   |      U_fifo_w32_d2_A_x_x_x_ram                      |fifo_w32_d2_A_x_x_x_shiftReg_84               |    81|
+|195   |    reps_c_i_U                                       |fifo_w32_d2_A_x_x_x_83                        |   104|
+|196   |      U_fifo_w32_d2_A_x_x_x_ram                      |fifo_w32_d2_A_x_x_x_shiftReg                  |    96|
+|197   |    splitStream_Length35_U0                          |splitStream_Length35                          |   264|
+|198   |    start_for_ConvStreamGenerator_3_U0_U             |start_for_ConvStreamGenerator_3_U0            |    13|
+|199   |    start_for_Conv_MulAct_ScaleBit_1_U0_U            |start_for_Conv_MulAct_ScaleBit_1_U0           |    11|
+|200   |    start_for_mergeStream_Length_U0_U                |start_for_mergeStream_Length_U0               |    11|
+|201   |  ConvLayer_NOPAD_IOP_U0                             |ConvLayer_NOPAD_IOP                           | 29668|
+|202   |    ConvStreamGenerator_U0                           |ConvStreamGenerator_s                         |   426|
+|203   |      Local1_V_U                                     |ConvStreamGenerator_s_Local1_V                |    15|
+|204   |        ConvStreamGenerator_s_Local1_V_ram_U         |ConvStreamGenerator_s_Local1_V_ram            |    15|
+|205   |    Conv_MulAct_ScaleBit_U0                          |Conv_MulAct_ScaleBit                          | 27949|
+|206   |      C4_B_V_U                                       |Conv_MulAct_ScaleBit_C4_B_V                   |  1587|
+|207   |        Conv_MulAct_ScaleBit_C4_B_V_rom_U            |Conv_MulAct_ScaleBit_C4_B_V_rom               |  1587|
+|208   |      C4_W_V_0_U                                     |Conv_MulAct_ScaleBit_C4_W_V_0                 |     4|
+|209   |        Conv_MulAct_ScaleBit_C4_W_V_0_rom_U          |Conv_MulAct_ScaleBit_C4_W_V_0_rom             |     4|
+|210   |      C4_W_V_1_U                                     |Conv_MulAct_ScaleBit_C4_W_V_1                 |     4|
+|211   |        Conv_MulAct_ScaleBit_C4_W_V_1_rom_U          |Conv_MulAct_ScaleBit_C4_W_V_1_rom             |     4|
+|212   |      C4_W_V_2_U                                     |Conv_MulAct_ScaleBit_C4_W_V_2                 |    10|
+|213   |        Conv_MulAct_ScaleBit_C4_W_V_2_rom_U          |Conv_MulAct_ScaleBit_C4_W_V_2_rom             |    10|
+|214   |      C4_W_V_3_U                                     |Conv_MulAct_ScaleBit_C4_W_V_3                 |     4|
+|215   |        Conv_MulAct_ScaleBit_C4_W_V_3_rom_U          |Conv_MulAct_ScaleBit_C4_W_V_3_rom             |     4|
+|216   |      top_mux_164_25_1_1_U258                        |top_mux_164_25_1_1                            |   325|
+|217   |      top_mux_164_25_1_1_U259                        |top_mux_164_25_1_1_75                         |   325|
+|218   |      top_mux_164_25_1_1_U260                        |top_mux_164_25_1_1_76                         |   325|
+|219   |      top_mux_164_25_1_1_U261                        |top_mux_164_25_1_1_77                         |   325|
+|220   |      top_mux_164_25_1_1_U262                        |top_mux_164_25_1_1_78                         |   325|
+|221   |      top_mux_164_25_1_1_U263                        |top_mux_164_25_1_1_79                         |   358|
+|222   |    Conv_Str_V_V_U                                   |fifo_w32_d2_A_x_x_x_x_x                       |    74|
+|223   |      U_fifo_w32_d2_A_x_x_x_x_x_ram                  |fifo_w32_d2_A_x_x_x_x_x_shiftReg_74           |    64|
+|224   |    OutPStream_V_V_U                                 |fifo_w32_d2_A_x_x_x_x_x_65                    |   104|
+|225   |      U_fifo_w32_d2_A_x_x_x_x_x_ram                  |fifo_w32_d2_A_x_x_x_x_x_shiftReg_73           |    96|
+|226   |    in_m_V_V_U                                       |fifo_w32_d2_A_x_x_x_x_x_66                    |   105|
+|227   |      U_fifo_w32_d2_A_x_x_x_x_x_ram                  |fifo_w32_d2_A_x_x_x_x_x_shiftReg_72           |    96|
+|228   |    mergeStream_Length_2_U0                          |mergeStream_Length_2                          |   238|
+|229   |    reps_c1_i_U                                      |fifo_w32_d2_A_x_x_x_x_x_67                    |   105|
+|230   |      U_fifo_w32_d2_A_x_x_x_x_x_ram                  |fifo_w32_d2_A_x_x_x_x_x_shiftReg_71           |    96|
+|231   |    reps_c2_i_U                                      |fifo_w32_d2_A_x_x_x_x_x_68                    |   120|
+|232   |      U_fifo_w32_d2_A_x_x_x_x_x_ram                  |fifo_w32_d2_A_x_x_x_x_x_shiftReg_70           |   111|
+|233   |    reps_c_i_U                                       |fifo_w32_d2_A_x_x_x_x_x_69                    |   106|
+|234   |      U_fifo_w32_d2_A_x_x_x_x_x_ram                  |fifo_w32_d2_A_x_x_x_x_x_shiftReg              |    97|
+|235   |    splitStream_Length35_1_U0                        |splitStream_Length35_1                        |   381|
+|236   |    start_for_ConvStreamGenerator_U0_U               |start_for_ConvStreamGenerator_U0              |     9|
+|237   |    start_for_Conv_MulAct_ScaleBit_U0_U              |start_for_Conv_MulAct_ScaleBit_U0             |    10|
+|238   |    start_for_mergeStream_Length_2_U0_U              |start_for_mergeStream_Length_2_U0             |    11|
+|239   |  DelHead_56u_U0                                     |DelHead_56u_s                                 |   578|
+|240   |  EleExtend_U0                                       |EleExtend                                     |   455|
+|241   |  ExtendStreamWidth_Le_U0                            |ExtendStreamWidth_Le                          |   111|
+|242   |  F6_out_V_V_U                                       |fifo_w80_d2_A                                 |   249|
+|243   |    U_fifo_w80_d2_A_ram                              |fifo_w80_d2_A_shiftReg_63                     |   240|
+|244   |  FcnnLayer_ScaleBit_1_U0                            |FcnnLayer_ScaleBit_1                          |   624|
+|245   |    F6_B_V_U                                         |FcnnLayer_ScaleBit_1_F6_B_V                   |    31|
+|246   |      FcnnLayer_ScaleBit_1_F6_B_V_rom_U              |FcnnLayer_ScaleBit_1_F6_B_V_rom               |    31|
+|247   |    F6_W_V_U                                         |FcnnLayer_ScaleBit_1_F6_W_V                   |    39|
+|248   |      FcnnLayer_ScaleBit_1_F6_W_V_rom_U              |FcnnLayer_ScaleBit_1_F6_W_V_rom               |    39|
+|249   |    result_V_U                                       |FcnnLayer_ScaleBit_1_result_V                 |    86|
+|250   |      FcnnLayer_ScaleBit_1_result_V_ram_U            |FcnnLayer_ScaleBit_1_result_V_ram             |    86|
+|251   |    top_mac_muladd_8s_8ns_12ns_12_1_1_U360           |top_mac_muladd_8s_8ns_12ns_12_1_1             |    15|
+|252   |      top_mac_muladd_8s_8ns_12ns_12_1_1_DSP48_10_U   |top_mac_muladd_8s_8ns_12ns_12_1_1_DSP48_10_62 |    15|
+|253   |    top_mac_muladd_8s_8ns_12ns_12_1_1_U361           |top_mac_muladd_8s_8ns_12ns_12_1_1_55          |     2|
+|254   |      top_mac_muladd_8s_8ns_12ns_12_1_1_DSP48_10_U   |top_mac_muladd_8s_8ns_12ns_12_1_1_DSP48_10_61 |     2|
+|255   |    top_mac_muladd_8s_8ns_12ns_12_1_1_U363           |top_mac_muladd_8s_8ns_12ns_12_1_1_56          |    13|
+|256   |      top_mac_muladd_8s_8ns_12ns_12_1_1_DSP48_10_U   |top_mac_muladd_8s_8ns_12ns_12_1_1_DSP48_10_60 |    13|
+|257   |    top_mac_muladd_8s_8ns_12ns_12_1_1_U365           |top_mac_muladd_8s_8ns_12ns_12_1_1_57          |     1|
+|258   |      top_mac_muladd_8s_8ns_12ns_12_1_1_DSP48_10_U   |top_mac_muladd_8s_8ns_12ns_12_1_1_DSP48_10_59 |     1|
+|259   |    top_mac_muladd_8s_8ns_12ns_12_1_1_U367           |top_mac_muladd_8s_8ns_12ns_12_1_1_58          |     1|
+|260   |      top_mac_muladd_8s_8ns_12ns_12_1_1_DSP48_10_U   |top_mac_muladd_8s_8ns_12ns_12_1_1_DSP48_10    |     1|
+|261   |  FcnnLayer_ScaleBit_U0                              |FcnnLayer_ScaleBit                            |  1232|
+|262   |    F5_B_V_U                                         |FcnnLayer_ScaleBit_F5_B_V                     |    37|
+|263   |      FcnnLayer_ScaleBit_F5_B_V_rom_U                |FcnnLayer_ScaleBit_F5_B_V_rom                 |    37|
+|264   |    F5_W_V_U                                         |FcnnLayer_ScaleBit_F5_W_V                     |   125|
+|265   |      FcnnLayer_ScaleBit_F5_W_V_rom_U                |FcnnLayer_ScaleBit_F5_W_V_rom                 |   125|
+|266   |    result_V_U                                       |FcnnLayer_ScaleBit_result_V                   |   316|
+|267   |      FcnnLayer_ScaleBit_result_V_ram_U              |FcnnLayer_ScaleBit_result_V_ram               |   316|
+|268   |    top_mac_muladd_8ns_8s_12ns_12_1_1_U319           |top_mac_muladd_8ns_8s_12ns_12_1_1             |     1|
+|269   |      top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_U    |top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_54  |     1|
+|270   |    top_mac_muladd_8ns_8s_12ns_12_1_1_U320           |top_mac_muladd_8ns_8s_12ns_12_1_1_41          |    11|
+|271   |      top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_U    |top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_53  |    11|
+|272   |    top_mac_muladd_8ns_8s_12ns_12_1_1_U321           |top_mac_muladd_8ns_8s_12ns_12_1_1_42          |     2|
+|273   |      top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_U    |top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_52  |     2|
+|274   |    top_mac_muladd_8ns_8s_12ns_12_1_1_U323           |top_mac_muladd_8ns_8s_12ns_12_1_1_43          |     2|
+|275   |      top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_U    |top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_51  |     2|
+|276   |    top_mac_muladd_8ns_8s_12ns_12_1_1_U331           |top_mac_muladd_8ns_8s_12ns_12_1_1_44          |    15|
+|277   |      top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_U    |top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_50  |    15|
+|278   |    top_mac_muladd_8ns_8s_12ns_12_1_1_U345           |top_mac_muladd_8ns_8s_12ns_12_1_1_45          |    31|
+|279   |      top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_U    |top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_49  |    31|
+|280   |    top_mac_muladd_8ns_8s_12ns_12_1_1_U347           |top_mac_muladd_8ns_8s_12ns_12_1_1_46          |     7|
+|281   |      top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_U    |top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_48  |     7|
+|282   |    top_mac_muladd_8ns_8s_12ns_12_1_1_U349           |top_mac_muladd_8ns_8s_12ns_12_1_1_47          |    13|
+|283   |      top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9_U    |top_mac_muladd_8ns_8s_12ns_12_1_1_DSP48_9     |    13|
+|284   |  MaxPool_IOP_1_U0                                   |MaxPool_IOP_1                                 |  1486|
+|285   |    MaxPooling_Run_2_U0                              |MaxPooling_Run_2                              |   609|
+|286   |      PoolVec_V_U                                    |MaxPooling_Run_2_PoolVec_V                    |    75|
+|287   |        MaxPooling_Run_2_PoolVec_V_ram_U             |MaxPooling_Run_2_PoolVec_V_ram                |    75|
+|288   |    PoolPacks_V_V_U                                  |fifo_w64_d2_A_x                               |   202|
+|289   |      U_fifo_w64_d2_A_x_ram                          |fifo_w64_d2_A_x_shiftReg                      |   192|
+|290   |    PoolStreamGenerator_2_U0                         |PoolStreamGenerator_2                         |   547|
+|291   |    reps_c_i_U                                       |fifo_w32_d2_A_x_x                             |   115|
+|292   |      U_fifo_w32_d2_A_x_x_ram                        |fifo_w32_d2_A_x_x_shiftReg                    |   107|
+|293   |    start_for_MaxPooling_Run_2_U0_U                  |start_for_MaxPooling_Run_2_U0                 |    12|
+|294   |  MaxPool_IOP_2_U0                                   |MaxPool_IOP_2                                 |  1492|
+|295   |    MaxPooling_Run_1_U0                              |MaxPooling_Run_1                              |   720|
+|296   |      PoolVec_V_U                                    |MaxPooling_Run_1_PoolVec_V                    |    98|
+|297   |        MaxPooling_Run_1_PoolVec_V_ram_U             |MaxPooling_Run_1_PoolVec_V_ram                |    98|
+|298   |    PoolPacks_V_V_U                                  |fifo_w64_d2_A_x_x_x                           |   185|
+|299   |      U_fifo_w64_d2_A_x_x_x_ram                      |fifo_w64_d2_A_x_x_x_shiftReg                  |   176|
+|300   |    PoolStreamGenerator_1_U0                         |PoolStreamGenerator_1                         |   565|
+|301   |    reps_c_i_U                                       |fifo_w32_d2_A_x_x_x_x                         |     8|
+|302   |    start_for_MaxPooling_Run_1_U0_U                  |start_for_MaxPooling_Run_1_U0                 |    11|
+|303   |  MaxPool_IOP_U0                                     |MaxPool_IOP                                   |  1382|
+|304   |    MaxPooling_Run_U0                                |MaxPooling_Run                                |   618|
+|305   |      PoolVec_V_U                                    |MaxPooling_Run_PoolVec_V                      |   111|
+|306   |        MaxPooling_Run_PoolVec_V_ram_U               |MaxPooling_Run_PoolVec_V_ram                  |   111|
+|307   |    PoolPacks_V_V_U                                  |fifo_w64_d2_A_x_x_x_x                         |   185|
+|308   |      U_fifo_w64_d2_A_x_x_x_x_ram                    |fifo_w64_d2_A_x_x_x_x_shiftReg                |   176|
+|309   |    PoolStreamGenerator_U0                           |PoolStreamGenerator_s                         |   464|
+|310   |      top_mux_32_64_1_1_U299                         |top_mux_32_64_1_1                             |    64|
+|311   |    reps_c_i_U                                       |fifo_w32_d2_A_x_x_x_x_x_x                     |   103|
+|312   |      U_fifo_w32_d2_A_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_shiftReg            |    95|
+|313   |    start_for_MaxPooling_Run_U0_U                    |start_for_MaxPooling_Run_U0                   |    11|
+|314   |  P2_out_V_V_U                                       |fifo_w64_d2_A_x_x_x_x_x_4                     |   202|
+|315   |    U_fifo_w64_d2_A_x_x_x_x_x_ram                    |fifo_w64_d2_A_x_x_x_x_x_shiftReg_40           |   192|
+|316   |  P3_out_V_V_U                                       |fifo_w64_d2_A_x_x_x_x_x_5                     |   201|
+|317   |    U_fifo_w64_d2_A_x_x_x_x_x_ram                    |fifo_w64_d2_A_x_x_x_x_x_shiftReg_39           |   192|
+|318   |  P4_out_V_V_U                                       |fifo_w64_d2_A_x_x_x_x_x_6                     |   201|
+|319   |    U_fifo_w64_d2_A_x_x_x_x_x_ram                    |fifo_w64_d2_A_x_x_x_x_x_shiftReg              |   192|
+|320   |  ReduceStreamWidth_Le_1_U0                          |ReduceStreamWidth_Le_1                        |   110|
+|321   |  ReduceStreamWidth_Le_U0                            |ReduceStreamWidth_Le                          |   193|
+|322   |  in112_V_V_U                                        |fifo_w112_d2_A                                |   345|
+|323   |    U_fifo_w112_d2_A_ram                             |fifo_w112_d2_A_shiftReg                       |   336|
+|324   |  reps_c10_U                                         |fifo_w32_d2_A_x_x_x_x_x_x_x                   |   106|
+|325   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_38       |    97|
+|326   |  reps_c11_U                                         |fifo_w32_d2_A_x_x_x_x_x_x_x_7                 |   106|
+|327   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_37       |    96|
+|328   |  reps_c12_U                                         |fifo_w32_d2_A_x_x_x_x_x_x_x_8                 |   106|
+|329   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_36       |    96|
+|330   |  reps_c13_U                                         |fifo_w32_d2_A_x_x_x_x_x_x_x_9                 |   105|
+|331   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_35       |    96|
+|332   |  reps_c14_U                                         |fifo_w32_d2_A_x_x_x_x_x_x_x_10                |   107|
+|333   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_34       |    96|
+|334   |  reps_c1_U                                          |fifo_w32_d2_A_x_x_x_x_x_x_x_11                |   143|
+|335   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_33       |   134|
+|336   |  reps_c3_U                                          |fifo_w32_d2_A_x_x_x_x_x_x_x_13                |   105|
+|337   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_31       |    96|
+|338   |  reps_c4_U                                          |fifo_w32_d2_A_x_x_x_x_x_x_x_14                |   106|
+|339   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_30       |    97|
+|340   |  reps_c5_U                                          |fifo_w32_d2_A_x_x_x_x_x_x_x_15                |   141|
+|341   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_29       |   133|
+|342   |  reps_c6_U                                          |fifo_w32_d2_A_x_x_x_x_x_x_x_16                |   136|
+|343   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_28       |   127|
+|344   |  reps_c7_U                                          |fifo_w32_d2_A_x_x_x_x_x_x_x_17                |   117|
+|345   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_27       |   109|
+|346   |  reps_c8_U                                          |fifo_w32_d2_A_x_x_x_x_x_x_x_18                |   137|
+|347   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_26       |   128|
+|348   |  reps_c9_U                                          |fifo_w32_d2_A_x_x_x_x_x_x_x_19                |   141|
+|349   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg_25       |   132|
+|350   |  reps_c_U                                           |fifo_w32_d2_A_x_x_x_x_x_x_x_20                |   144|
+|351   |    U_fifo_w32_d2_A_x_x_x_x_x_x_x_ram                |fifo_w32_d2_A_x_x_x_x_x_x_x_shiftReg          |   134|
+|352   |  res8_str_V_V_U                                     |fifo_w80_d2_A_21                              |   249|
+|353   |    U_fifo_w80_d2_A_ram                              |fifo_w80_d2_A_shiftReg                        |   240|
+|354   |  splitStream_Length_U0                              |splitStream_Length                            |   399|
+|355   |  start_for_AddLast_1u_U0_U                          |start_for_AddLast_1u_U0                       |    11|
+|356   |  start_for_ConvLayer_NOPAD_IOP_1_U0_U               |start_for_ConvLayer_NOPAD_IOP_1_U0            |    12|
+|357   |  start_for_ConvLayer_NOPAD_IOP_2_U0_U               |start_for_ConvLayer_NOPAD_IOP_2_U0            |     9|
+|358   |  start_for_ConvLayer_NOPAD_IOP_3_U0_U               |start_for_ConvLayer_NOPAD_IOP_3_U0            |     9|
+|359   |  start_for_ConvLayer_NOPAD_IOP_U0_U                 |start_for_ConvLayer_NOPAD_IOP_U0              |     9|
+|360   |  start_for_EleExtend_U0_U                           |start_for_EleExtend_U0                        |    12|
+|361   |  start_for_ExtendStreamWidth_Le_U0_U                |start_for_ExtendStreamWidth_Le_U0             |    10|
+|362   |  start_for_FcnnLayer_ScaleBit_1_U0_U                |start_for_FcnnLayer_ScaleBit_1_U0             |    10|
+|363   |  start_for_FcnnLayer_ScaleBit_U0_U                  |start_for_FcnnLayer_ScaleBit_U0               |    11|
+|364   |  start_for_MaxPool_IOP_1_U0_U                       |start_for_MaxPool_IOP_1_U0                    |    13|
+|365   |  start_for_MaxPool_IOP_2_U0_U                       |start_for_MaxPool_IOP_2_U0                    |     9|
+|366   |  start_for_MaxPool_IOP_U0_U                         |start_for_MaxPool_IOP_U0                      |    12|
+|367   |  start_for_ReduceStreamWidth_Le_1_U0_U              |start_for_ReduceStreamWidth_Le_1_U0           |    10|
+|368   |  start_for_ReduceStreamWidth_Le_U0_U                |start_for_ReduceStreamWidth_Le_U0             |    10|
+|369   |  start_for_splitStream_Length_U0_U                  |start_for_splitStream_Length_U0               |    12|
+|370   |  tin_V_V_U                                          |fifo_w128_d2_A_x_22                           |   343|
+|371   |    U_fifo_w128_d2_A_x_ram                           |fifo_w128_d2_A_x_shiftReg_24                  |   336|
+|372   |  top_control_s_axi_U                                |top_control_s_axi                             |   187|
+|373   |  tout_V_V_U                                         |fifo_w128_d2_A_x_23                           |   250|
+|374   |    U_fifo_w128_d2_A_x_ram                           |fifo_w128_d2_A_x_shiftReg                     |   240|
++------+-----------------------------------------------------+----------------------------------------------+------+

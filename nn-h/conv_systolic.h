@@ -215,7 +215,9 @@ ap_int<MBit*ASize*WSize> Orbital_Gemm(ap_uint<ABit*ASize*Depth> activation,ap_in
 #pragma HLS UNROLL
 			for(unsigned k = 0; k < WSize;k++){
 #pragma HLS UNROLL
-				O[j][k] = O[j][k] + W[k][j] * A[j][k];
+				ap_int<MBit> tem = W[k][j] * A[j][k];
+#pragma HLS resource variable=tem core=Mul_LUT
+				O[j][k] = O[j][k] +tem;
 			}
 		}
 		for(unsigned j = 0;j < ASize;j++){
@@ -279,6 +281,47 @@ void ConvStreamGenerator_Batch(hls::stream<ap_uint<Batch*IOBit*IOP> >& in,hls::s
 				for(unsigned pack = 0;pack < IOPack;pack++){	
 					for(unsigned m = 0;m < WinSize;m++){
 						for(unsigned n = 0;n < WinSize;n++){
+#pragma HLS PIPELINE II=1
+							out.write(Local1[(line+m)%WinSize][p+n][pack]);
+							// cout << "write" << Local1[(line+m)%WinSize][p+n][pack] << endl;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+template<unsigned Batch,unsigned WinSize,unsigned Size,unsigned Channel,unsigned IOP,unsigned IOBit,unsigned Stride>
+void ConvStreamGenerator_Batch_CF(hls::stream<ap_uint<Batch*IOBit*IOP> >& in,hls::stream<ap_uint<Batch*IOBit*IOP> >& out,unsigned reps = 1){
+	assert(Channel%IOP == 0);
+	const unsigned IOPack = Channel / IOP;
+	ap_uint<IOBit*Batch*IOP> Local1[WinSize][Size][IOPack];
+	ap_uint<IOBit*Batch*IOP> temp;
+	for(unsigned rep = 0;rep < reps;rep++){
+		unsigned line = 0;
+		for(unsigned i = 0;i < WinSize-1;i++){
+			for(unsigned j = 0;j < Size;j++){
+				for(unsigned pack = 0;pack < IOPack;pack++){
+					Local1[i][j][pack] = in.read();
+					// cout << "read" << hex << Local1[i][j][pack]<< endl;
+				}
+			}
+			line++;
+		}
+		for(unsigned i = 0;i < Size-WinSize+1;i++){
+			for(unsigned j = 0;j < Size;j++){
+				for(unsigned pack = 0;pack < IOPack;pack++){
+					Local1[line][j][pack] = in.read();
+					// cout << "read" << hex << Local1[line][j][pack]<< endl;
+				}
+			}
+			line = (line+1)%WinSize;
+			for(unsigned p = 0;p < Size-WinSize+1;p+=Stride){
+				for(unsigned m = 0;m < WinSize;m++){
+					for(unsigned n = 0;n < WinSize;n++){
+						for(unsigned pack = 0;pack < IOPack;pack++){	
+
 #pragma HLS PIPELINE II=1
 							out.write(Local1[(line+m)%WinSize][p+n][pack]);
 							// cout << "write" << Local1[(line+m)%WinSize][p+n][pack] << endl;
@@ -406,60 +449,19 @@ void ConvLayer_NOPAD_Orbital(hls::stream<ap_uint<Batch*InP*ABit> >& in,hls::stre
 	Conv_MulAct_Oribital<Batch,KSize,WBit,ABit,MBit,InChannel,OutChannel,Stride,Size,MidP_i,MidP_o,OutP>(Conv_Str,out,Weight,Bias,Scale,reps);
 }
 
-// template<int KSize, int WBit, int ABit,
-// int InChannel, int OutChannel,
-// int Stride,
-// int Size,int reps>
-// void ConvLayer_systolic(hls::stream<ap_uint<ABit*InChannel> >& in,hls::stream<ap_uint<ABit*OutChannel> >& out,const ap_int<WBit> Weight[reps][OutChannel][InChannel][KSize][KSize],const ap_int<WBit> Bias[reps][OutChannel],const ap_uint<WBit> Scale){
-// #pragma HLS DATAFLOW
-// #pragma HLS INTERFACE ap_hs port=in
-// #pragma HLS INTERFACE ap_hs port=out
-// 	hls::stream<ap_uint<ABit*KSize*KSize*InChannel> > ConvMatrixStream;
-// 	ConvStreamGenerator_N<KSize,InChannel,Stride,ABit,Size,Size,1,1,reps>(in,ConvMatrixStream);
-// 	Conv_MulAct_N<KSize,InChannel,OutChannel,Stride,WBit,ABit,Size,reps>(ConvMatrixStream,out,Weight,Bias,Scale);
-// }
-
-// template<int InPix,		//8
-// 		int OutPix,		//8
-// 		int InSize,		//32
-// 		int OutSize,	//32
-// 		int WBit,
-// 		int ABit>	//has InPix and OutPix
-// void FcnnLayer_systolic(hls::stream<ap_uint<ABit*InPix> >& in,hls::stream<ap_uint<ABit*OutPix> >& out,const ap_int<WBit> Weight[OutSize][InSize],const ap_int<WBit> Bias[OutSize],const ap_uint<WBit> Scale){
-// 	const ap_uint<ABit+1> limit = (1 << ABit);
-// 	ap_int<ABit+WBit> result[OutSize];
-// 	const int Pack = OutSize/OutPix;
-// 	for(int q = 0; q < OutSize;q++){
-// 		result[q] = Bias[q];
-// 	}
-// 	for(int i = 0;i < InSize;i+=InPix){
-// 		ap_uint<ABit*InPix> Rin = in.read();
-// #pragma HLS PIPELINE II = InPix
-// 		for(int m = 0;m < InPix;m++){
-// 			for(int n = 0; n < OutSize;n++){
-// 				ap_uint<ABit> Rin_P = Rin((m+1)*ABit-1,m*ABit);
-// 				result[n] += Weight[n][i+m] * Rin_P;
-// 			}
-// 		}
-// 	}
-// 	//clamp(0,1<<ABit)
-// 	for(int a = 0; a < OutSize;a++){
-// 		std::cout << a << "  " << result[a] << std::endl;
-// 		result[a] = result[a] / Scale;
-// 		if(result[a] < 0)
-// 			result[a] = 0;
-// 		else if(result[a] >= limit)
-// 			result[a] = limit - 1;
-// 	}
-// 	ap_uint<ABit*OutPix> OutTemp;
-// 	for(int w = 0;w < Pack;w++){
-// 		for(int e = 0;e < OutPix;e++){
-// #pragma HLS UNROLL
-// 			ap_uint<ABit> OP = result[w*OutPix+e];
-// 			OutTemp((e+1)*ABit-1,e*ABit) = OP;
-// 		}
-// 		out.write(OutTemp);
-// 	}
-// 	return;
-// }
-
+template<unsigned KSize,unsigned Size,unsigned InChannel,unsigned OutChannel,unsigned InP,unsigned MidP_i,unsigned MidP_o,unsigned OutP,unsigned Stride,unsigned WBit,unsigned ABit,unsigned MBit>
+void ConvLayer_NOPAD_IOP(hls::stream<ap_uint<InP*ABit> >& in,hls::stream<ap_uint<OutP*ABit> >& out,const ap_int<WBit*MidP_i> Weight[(InChannel/MidP_i)*KSize*KSize*(OutChannel/MidP_o)][MidP_o],const ap_int<WBit> Bias[OutChannel],const unsigned Scale,unsigned reps = 1){
+#pragma HLS DATAFLOW
+	assert(InChannel%InP == 0);
+	assert(OutChannel%OutP == 0);
+	assert(InChannel%InP == 0);
+	const unsigned StrLen = (InChannel/InP)*Size*Size;
+	const unsigned Pixs = ((Size-KSize)/Stride+1)*((Size-KSize)/Stride+1);
+	hls::stream<ap_uint<MidP_i*ABit> > Conv_Str;
+	hls::stream<ap_uint<MidP_i*ABit> > in_m;
+	hls::stream<ap_uint<MidP_o*ABit> > OutPStream;
+	splitStream_Length<InP*ABit,MidP_i*ABit,StrLen>(in,in_m,reps);
+	ConvStreamGenerator_Batch_CF<1,KSize,Size,InChannel,MidP_i,ABit,Stride>(in_m,Conv_Str,reps);
+	Conv_MulAct_ScaleBit<KSize,InChannel,OutChannel,Stride,WBit,ABit,MBit,Size,MidP_i,MidP_o>(Conv_Str,OutPStream,Weight,Bias,Scale,reps);
+	mergeStream_Length<MidP_o*ABit,OutP*ABit,Pixs*(OutChannel/OutP)>(OutPStream,out,reps);
+}

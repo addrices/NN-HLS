@@ -11,7 +11,7 @@
 #define C1_KSIZE 3
 #define C1_INP 1
 #define C1_MIDP_I 1
-#define C1_MIDP_O 4
+#define C1_MIDP_O 2
 #define C1_OUTP 4
 #define C1_SCALEBIT 7
 #define C1_STRIDE 1
@@ -23,7 +23,7 @@
 #define C2_SIZE 26
 #define C2_KSIZE 3
 #define C2_INP 4
-#define C2_MIDP_I 2
+#define C2_MIDP_I 1
 #define C2_MIDP_O 8
 #define C2_OUTP 4
 #define C2_SCALEBIT 8
@@ -37,7 +37,7 @@
 #define C3_KSIZE 3
 #define C3_INP 4
 #define C3_MIDP_I 1
-#define C3_MIDP_O 8
+#define C3_MIDP_O 4
 #define C3_OUTP 4
 #define C3_SCALEBIT 9
 #define C3_STRIDE 1

@@ -70,7 +70,7 @@ void ReduceStreamWidth_Length(hls::stream<ap_uint<IStrBit> >& in,hls::stream<ap_
 	for(unsigned i = 0; i < Length*reps;i++){
 #pragma HLS PIPELINE II = 1
 		ap_uint<IStrBit> InTemp = in.read();
-		out.write(InTemp(OStrBit,0));
+		out.write(InTemp(OStrBit-1,0));
 	}
 }
 

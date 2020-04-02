@@ -59,12 +59,12 @@ void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1)
 #pragma HLS DATAFLOW
 	hls::stream<ap_uint<8> > In8;
 	hls::stream<ap_uint<ABIT> > C1_in;
-	hls::stream<ap_uint<ABIT*C1_OUTCHANNEL> > C1_out;
-	hls::stream<ap_uint<ABIT*C2_OUTCHANNEL> > C2_out;
-	hls::stream<ap_uint<ABIT*P2_CHANNEL> > P2_out;
-	hls::stream<ap_uint<ABIT*C3_OUTCHANNEL> > C3_out;
-	hls::stream<ap_uint<ABIT*P3_CHANNEL> > P3_out;
-	hls::stream<ap_uint<ABIT*C4_OUTCHANNEL> > C4_out;
+	hls::stream<ap_uint<ABIT*C1_OUTP> > C1_out;
+	hls::stream<ap_uint<ABIT*C2_OUTP> > C2_out;
+	hls::stream<ap_uint<ABIT*P2_OUTP> > P2_out;
+	hls::stream<ap_uint<ABIT*C3_OUTP> > C3_out;
+	hls::stream<ap_uint<ABIT*P3_OUTP> > P3_out;
+	hls::stream<ap_uint<ABIT*C4_OUTP> > C4_out;
 	hls::stream<ap_uint<ABIT*P4_OUTP> > P4_out;
 	hls::stream<ap_uint<ABIT*F5_OUTP> > F5_out;
 	hls::stream<ap_uint<ABIT*F6_OUTP> > F6_out;
@@ -77,20 +77,18 @@ void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1)
 	splitStream_Length<14*8,8,56>(in112,In8,reps);
 	ReduceStreamWidth_Length<8,ABIT,28*28>(In8,C1_in,reps);
 
-	C1:ConvLayer_NOPAD_ScaleBit<C1_KSIZE,WBIT,ABIT,C1_MBIT,C1_INCHANNEL,C1_OUTCHANNEL,C1_STRIDE,C1_SIZE,C1_INP,C1_OUTP>(C1_in,C1_out,C1_W,C1_B,C1_SCALEBIT,reps);
-	C2:ConvLayer_NOPAD_ScaleBit<C2_KSIZE,WBIT,ABIT,C2_MBIT,C2_INCHANNEL,C2_OUTCHANNEL,C2_STRIDE,C2_SIZE,C2_INP,C2_OUTP>(C1_out,C2_out,C2_W,C2_B,C2_SCALEBIT,reps);
-	P2:MaxPool_Channel<P2_PSIZE,ABIT,P2_SIZE,P2_SIZE,P2_CHANNEL,P2_INP,P2_OUTP>(C2_out,P2_out,reps);
-	C3:ConvLayer_NOPAD_ScaleBit<C3_KSIZE,WBIT,ABIT,C3_MBIT,C3_INCHANNEL,C3_OUTCHANNEL,C3_STRIDE,C3_SIZE,C3_INP,C3_OUTP>(P2_out,C3_out,C3_W,C3_B,C3_SCALEBIT,reps);
-	P3:MaxPool_Channel<P3_PSIZE,ABIT,P3_SIZE,P3_SIZE,P3_CHANNEL,P3_INP,P3_OUTP>(C3_out,P3_out,reps);
-	C4:ConvLayer_NOPAD_ScaleBit<C4_KSIZE,WBIT,ABIT,C4_MBIT,C4_INCHANNEL,C4_OUTCHANNEL,C4_STRIDE,C4_SIZE,C4_INP,C4_OUTP>(P3_out,C4_out,C4_W,C4_B,C4_SCALEBIT,reps);
-	P4:MaxPool_Channel_T<P4_PSIZE,ABIT,P4_SIZE,P4_SIZE,P4_CHANNEL,P4_INP,P4_OUTP>(C4_out,P4_out,reps);
-	//splitStream_Length<ABIT*P4_CHANNEL,ABIT*F5_INP,1>(P4_out,F5_in);
+	C1:ConvLayer_NOPAD_IOP<C1_KSIZE,C1_SIZE,C1_INCHANNEL,C1_OUTCHANNEL,C1_INP,C1_MID_I,C1_MID_O,C1_OUTP,C1_STRIDE,WBIT,ABIT,C1_MBIT>(C1_in,C1_out,C1_W,C1_B,C1_SCALEBIT,reps);
 
-//	ExtendStreamWidth_Length<ABIT*P4_OUTP,128,8>(P4_out,tout);
-//	AddLast<8>(tout,out);
+	C2:ConvLayer_NOPAD_IOP<C2_KSIZE,C2_SIZE,C2_INCHANNEL,C2_OUTCHANNEL,C2_INP,C2_MID_I,C2_MID_O,C2_OUTP,C2_STRIDE,WBIT,ABIT,C2_MBIT>(C1_out,C2_out,C2_W,C2_B,C2_SCALEBIT,reps);
+	P2:MaxPool_IOP<P2_PSIZE,ABIT,P2_SIZE,P2_CHANNEL,P2_INP,P2_OUTP>(C2_out,P2_out,reps);
 
-	F5:FcnnLayer_ScaleBit<F5_INP,F5_OUTP,F5_IN,F5_OUT,WBIT,ABIT,F5_MBIT>(P4_out,F5_out,F5_W,F5_B,F5_SCALEBIT,reps);
-	F6:FcnnLayer_ScaleBit<F6_INP,F6_OUTP,F6_IN,F6_OUT,WBIT,ABIT,F5_MBIT>(F5_out,F6_out,F6_W,F6_B,F6_SCALEBIT,reps);
+	C3:ConvLayer_NOPAD_IOP<C3_KSIZE,C3_SIZE,C3_INCHANNEL,C3_OUTCHANNEL,C3_INP,C3_MID_I,C3_MID_O,C3_OUTP,C3_STRIDE,WBIT,ABIT,C3_MBIT>(P2_out,C3_out,C3_W,C3_B,C3_SCALEBIT,reps);
+	P3:MaxPool_IOP<P3_PSIZE,ABIT,P3_SIZE,P3_CHANNEL,P3_INP,P3_OUTP>(C3_out,P3_out,reps);
+	C4:ConvLayer_NOPAD_IOP<C4_KSIZE,C4_SIZE,C4_INCHANNEL,C4_OUTCHANNEL,C4_INP,C4_MID_I,C4_MID_O,C4_OUTP,C4_STRIDE,WBIT,ABIT,C4_MBIT>(P3_out,C4_out,C4_W,C4_B,C4_SCALEBIT,reps);
+	P4:MaxPool_IOP<P4_PSIZE,ABIT,P4_SIZE,P4_CHANNEL,P4_INP,P4_OUTP>(C4_out,P4_out,reps);
+	F5:FcnnLayer_ScaleBit_IOP<F5_INP,F5_OUTP,F5_IN,F5_OUT,4,4,WBIT,ABIT,F5_MBIT>(P4_out,F5_out,F5_W,F5_B,F5_SCALEBIT,reps);
+	F6:FcnnLayer_ScaleBit_IOP<F6_INP,F6_OUTP,F6_IN,F6_OUT,4,2,WBIT,ABIT,F5_MBIT>(F5_out,F6_out,F6_W,F6_B,F6_SCALEBIT,reps);
+
 
 	hls::stream<ap_uint<F6_OUTP*8> > res8_str;
 	EleExtend<F6_OUTP,ABIT,8,1>(F6_out,res8_str,reps);
@@ -99,4 +97,3 @@ void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1)
 	AddLast<1>(tout,out,reps);
 	return;
 }
-

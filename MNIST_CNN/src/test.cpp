@@ -86,6 +86,7 @@ ap_uint<ABIT*C1_INCHANNEL> IMG2[C1_INCHANNEL][C1_SIZE][C1_SIZE] =
 				int a = j/2;
 				int b = (j%2)*14+k;
 				temp.data((k+1)*8-1,k*8) = IMG1[i][a][b];
+//				temp.data((k+1)*8-1,k*8) = a+b;
 				temp.keep(k,k) = 1;
 				if(j != 56-1){
 					temp.last = 0;
@@ -138,126 +139,7 @@ ap_uint<ABIT*C1_INCHANNEL> IMG2[C1_INCHANNEL][C1_SIZE][C1_SIZE] =
 //		}
 }
 
-void test(){
-	ap_uint<ABIT> IMG1[C1_INCHANNEL][C1_SIZE][C1_SIZE] =
-	{{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}};
-
-	hls::stream<ap_uint<ABIT> > C1_in;
-	hls::stream<ap_uint<ABIT*C1_OUTCHANNEL> > C1_out;
-	hls::stream<ap_uint<ABIT*C2_OUTCHANNEL> > C2_out;
-	hls::stream<ap_uint<ABIT*P2_CHANNEL> > P2_out;
-	hls::stream<ap_uint<ABIT*C3_OUTCHANNEL> > C3_out;
-	hls::stream<ap_uint<ABIT*P3_CHANNEL> > P3_out;
-	hls::stream<ap_uint<ABIT*C4_OUTCHANNEL> > C4_out;
-	hls::stream<ap_uint<ABIT*P4_OUTP> > P4_out;
-	hls::stream<ap_uint<ABIT*F5_OUTP> > F5_out;
-	hls::stream<ap_uint<ABIT*F6_OUTP> > F6_out;
-
-	for(int i = 0;i< 28;i++){
-		for(int j = 0;j < 28;j++){
-			C1_in.write(IMG1[0][i][j]);
-		}
-	}
-
-
-
-	C1:ConvLayer_NOPAD_ScaleBit<C1_KSIZE,WBIT,ABIT,C1_MBIT,C1_INCHANNEL,C1_OUTCHANNEL,C1_STRIDE,C1_SIZE,C1_INP,C1_OUTP>(C1_in,C1_out,C1_W,C1_B,C1_SCALEBIT,1);
-	C2:ConvLayer_NOPAD_ScaleBit<C2_KSIZE,WBIT,ABIT,C2_MBIT,C2_INCHANNEL,C2_OUTCHANNEL,C2_STRIDE,C2_SIZE,C2_INP,C2_OUTP>(C1_out,C2_out,C2_W,C2_B,C2_SCALEBIT,1);
-
-//	for(int i = 0;i< 24;i++){
-//		for(int j = 0;j < 24;j++){
-//			ap_uint<C2_OUTCHANNEL*ABIT> Otemp = C2_out.read();
-//			for(int m = 0;m < C2_OUTCHANNEL;m++){
-//				ap_uint<ABIT> cc = Otemp((m+1)*ABIT-1,m*ABIT);
-//				cout << cc << " " ;
-//			}
-//			cout << endl;
-//		}
-//	}
-
-	P2:MaxPool_Channel<P2_PSIZE,ABIT,P2_SIZE,P2_SIZE,P2_CHANNEL,P2_INP,P2_OUTP>(C2_out,P2_out,1);
-
-//	for(int i = 0;i< 12;i++){
-//		for(int j = 0;j < 12;j++){
-//			ap_uint<P2_CHANNEL*ABIT> Otemp = P2_out.read();
-//			for(int m = 0;m < P2_CHANNEL;m++){
-//				ap_uint<ABIT> cc = Otemp((m+1)*ABIT-1,m*ABIT);
-//				cout << cc << " " ;
-//			}
-//			cout << endl;
-//		}
-//	}
-	C3:ConvLayer_NOPAD_ScaleBit<C3_KSIZE,WBIT,ABIT,C3_MBIT,C3_INCHANNEL,C3_OUTCHANNEL,C3_STRIDE,C3_SIZE,C3_INP,C3_OUTP>(P2_out,C3_out,C3_W,C3_B,C3_SCALEBIT,1);
-	P3:MaxPool_Channel<P3_PSIZE,ABIT,P3_SIZE,P3_SIZE,P3_CHANNEL,P3_INP,P3_OUTP>(C3_out,P3_out,1);
-//	for(int i = 0;i< 5;i++){
-//		for(int j = 0;j < 5;j++){
-//			ap_uint<P3_CHANNEL*ABIT> Otemp = P3_out.read();
-//			for(int m = 0;m < P3_CHANNEL;m++){
-//				ap_uint<ABIT> cc = Otemp((m+1)*ABIT-1,m*ABIT);
-//				cout << cc << " " ;
-//			}
-//			cout << endl;
-//		}
-//	}
-	C4:ConvLayer_NOPAD_ScaleBit<C4_KSIZE,WBIT,ABIT,C4_MBIT,C4_INCHANNEL,C4_OUTCHANNEL,C4_STRIDE,C4_SIZE,C4_INP,C4_OUTP>(P3_out,C4_out,C4_W,C4_B,C4_SCALEBIT,1);
-	P4:MaxPool_Channel_T<P4_PSIZE,ABIT,P4_SIZE,P4_SIZE,P4_CHANNEL,P4_INP,P4_OUTP>(C4_out,P4_out,1);
-//	for(int j = 0;j < P4_CHANNEL/P4_OUTP;j++){
-//		ap_uint<P4_OUTP*ABIT> Otemp = P4_out.read();
-//		for(int m = 0;m < P4_OUTP;m++){
-//			ap_uint<ABIT> cc = Otemp((m+1)*ABIT-1,m*ABIT);
-//			cout << cc << " " ;
-//		}
-//	}
-//	cout << endl;
-	F5:FcnnLayer_ScaleBit<F5_INP,F5_OUTP,F5_IN,F5_OUT,WBIT,ABIT,F5_MBIT>(P4_out,F5_out,F5_W,F5_B,F5_SCALEBIT,1);
-//	cout << "out " << endl;
-//	for(int i = 0;i < F5_OUT/F5_OUTP;i++){
-//		ap_uint<ABIT*F5_OUTP> f5 = F5_out.read();
-//		for(int j = 0;j < F5_OUTP;j++){
-//			cout << f5((j+1)*ABIT-1,j*ABIT) << " ";
-//		}
-//		cout << endl;
-//	}
-	F6:FcnnLayer_ScaleBit<F6_INP,F6_OUTP,F6_IN,F6_OUT,WBIT,ABIT,F5_MBIT>(F5_out,F6_out,F6_W,F6_B,F6_SCALEBIT,1);
-	cout << "out " << endl;
-	for(int i = 0;i < F6_OUT/F6_OUTP;i++){
-		ap_uint<ABIT*F6_OUTP> f6 = F6_out.read();
-		for(int j = 0;j < F6_OUTP;j++){
-			cout << f6((j+1)*ABIT-1,j*ABIT) << " ";
-		}
-		cout << endl;
-	}
-
-
-}
 int main(){
 	test_top();
-	test();
+	//test();
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <ap_int.h>
 
-#define ABIT 4
+#define ABIT 8
 #define WBIT 8
 
 #define C1_INCHANNEL 1
@@ -11,18 +11,18 @@
 #define C1_KSIZE 3
 #define C1_INP 1
 #define C1_MID_I 1
-#define C1_MID_O 16
-#define C1_OUTP 16
+#define C1_MID_O 2
+#define C1_OUTP 8
 #define C1_SCALEBIT 7
 #define C1_STRIDE 1
-//16
+//2
 
 #define C2_INCHANNEL 16
 #define C2_OUTCHANNEL 32
 #define C2_MBIT 23
 #define C2_SIZE 26
 #define C2_KSIZE 3
-#define C2_INP 16
+#define C2_INP 8
 #define C2_MID_I 8
 #define C2_MID_O 8
 #define C2_OUTP 8
@@ -49,7 +49,7 @@
 #define C4_SIZE 5
 #define C4_KSIZE 3
 #define C4_INP 8
-#define C4_MID_I 4
+#define C4_MID_I 2
 #define C4_MID_O 4
 #define C4_OUTP 8
 #define C4_SCALEBIT 8
@@ -143,7 +143,6 @@ const ap_int<WBIT> F6_W[F6_OUT][F6_IN] =
 		{36,-35,-5,-14,-11,16,47,-53,-33,-21,36,3,-63,11,-28,-32,-28,59,25,-38,-22,11,-4,47,4,9,19,17,-53,23,-1,-14},
 		{5,22,32,24,-4,-43,-34,-31,62,2,47,-41,26,-31,17,64,25,8,-11,-41,11,39,13,-10,5,-2,-24,4,-5,9,43,12},
 		{-20,-21,-10,-2,3,-36,-47,48,-12,9,37,15,-47,43,-3,-20,2,21,25,-3,14,50,18,-10,11,15,42,20,30,-29,36,-20}};
-
 
 
 const ap_int<WBIT*C1_MID_I> C1_W[(C1_INCHANNEL/C1_MID_I)*C1_KSIZE*C1_KSIZE*(C1_OUTCHANNEL/C1_MID_O)][C1_MID_O] =
