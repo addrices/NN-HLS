@@ -57,7 +57,7 @@ void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1)
 #pragma HLS INTERFACE s_axilite port=reps bundle=control
 #pragma HLS INTERFACE s_axilite port=return bundle=control
 #pragma HLS DATAFLOW
-	const unsigned Batch = 4;
+	const unsigned Batch = 8;
 	hls::stream<ap_uint<8> > In8;
 
 	hls::stream<ap_uint<Batch*C1_INP*ABIT> > C1_in;

@@ -25,10 +25,10 @@
 #define C2_INP 4
 #define C2_MIDP_I 2
 #define C2_MIDP_O 8
-#define C2_OUTP 4
+#define C2_OUTP 8
 #define C2_SCALEBIT 8
 #define C2_STRIDE 1
-//64
+//128
 
 #define C3_INCHANNEL 32
 #define C3_OUTCHANNEL 64
@@ -38,10 +38,10 @@
 #define C3_INP 4
 #define C3_MIDP_I 1
 #define C3_MIDP_O 8
-#define C3_OUTP 4
+#define C3_OUTP 8
 #define C3_SCALEBIT 9
 #define C3_STRIDE 1
-//32
+//64
 
 #define C4_INCHANNEL 64
 #define C4_OUTCHANNEL 64
@@ -55,18 +55,18 @@
 #define C4_OUTP 4
 #define C4_SCALEBIT 8
 #define C4_STRIDE 1
-//16
+//32
 
 #define P2_CHANNEL 32
 #define P2_SIZE 24
 #define P2_PSIZE 2
-#define P2_INP 4
+#define P2_INP 8
 #define P2_OUTP 4
 
 #define P3_CHANNEL 64
 #define P3_SIZE 10
 #define P3_PSIZE 2
-#define P3_INP 4
+#define P3_INP 8
 #define P3_OUTP 4
 
 #define P4_CHANNEL 64

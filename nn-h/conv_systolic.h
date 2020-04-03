@@ -342,7 +342,7 @@ void Conv_MulAct_Oribital(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<
 	const unsigned InPack = InChannel / InP;
 	const unsigned MidPack = OutChannel / MidP;
 	const unsigned OutPack = OutChannel / OutP;
-	ap_uint<ABit> InArray[InP][Batch][Depth];
+	ap_uint<ABit> InArray[InP*Batch*Depth];
 	ap_int<MBit> MidArray[Batch*OutChannel];
 	ap_uint<ABit> OutArray[Batch*OutChannel];
 #pragma HLS array_partition variable=InArray complete
@@ -361,6 +361,8 @@ void Conv_MulAct_Oribital(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<
 				}
 			}
 			LoopInPack:for(unsigned ipack = 0;ipack < InPack;ipack++){
+				ap_uint<ABit*Batch*Depth> act[InP];
+				ap_int<WBit*MidP*Depth> wei[InP];
 				Orbital_pro:for(unsigned depth = 0;depth < Depth;depth++){
 #pragma HLS PIPELINE II = 1
 					ap_uint<Batch*ABit*InP> InTemp = in.read();
@@ -368,37 +370,26 @@ void Conv_MulAct_Oribital(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<
 #pragma HLS UNROLL
 						for(unsigned batch = 0;batch < Batch;batch++){
 #pragma HLS UNROLL
-							InArray[inp][batch][depth] = InTemp((inp*Batch+batch+1)*ABit-1,(inp*Batch+batch)*ABit);
+							act[inp]((batch*Depth+depth+1)*ABit-1,(batch*Depth+depth)*ABit) = InTemp((inp*Batch+batch+1)*ABit-1,(inp*Batch+batch)*ABit);
 						}
+
 					}
 				}
 				for(unsigned mpack = 0;mpack < MidPack;mpack++){
+#pragma HLS PIPELINE II = Depth+2
 					Orbital:for(unsigned inp = 0;inp < InP;inp++){
 #pragma HLS UNROLL
 						//one orbital
 						unsigned NInChannel = ipack * InP + inp;
-						ap_uint<ABit*Batch*Depth> act;
-						ap_int<WBit*MidP*Depth> wei;
 						ap_int<MBit*Batch*MidP> res;
-						//read
-						for(unsigned batch = 0;batch < Batch;batch++){
-#pragma HLS UNROLL
-							for(unsigned depth = 0;depth < Depth;depth++){
-#pragma HLS UNROLL
-								act((batch*Depth+depth+1)*ABit-1,(batch*Depth+depth)*ABit) = InArray[inp][batch][depth];
-								// cout << act[batch][depth] << " ";
-							}
-							// cout << endl;
-						}
-
 						for(unsigned midp = 0;midp < MidP;midp++){
 #pragma HLS UNROLL
 							unsigned NOutChannel = mpack * MidP + midp;
-							wei((midp+1)*Depth*WBit-1,midp*Depth*WBit) = Weight[NOutChannel][NInChannel];
+							wei[inP]((midp+1)*Depth*WBit-1,midp*Depth*WBit) = Weight[NOutChannel][NInChannel];
 						}
 
 						//calculate
-						res = Orbital_Gemm<Depth,Batch,MidP,ABit,WBit,MBit>(act,wei);
+						res = Orbital_Gemm<Depth,Batch,MidP,ABit,WBit,MBit>(act[inp],wei[inp]);
 						//write
 						for(unsigned j = 0; j < MidP; j++){
 #pragma HLS UNROLL

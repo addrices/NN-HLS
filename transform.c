@@ -254,15 +254,15 @@ const int8_t L4_W[64][64][3][3] = {{{{3,6,1},{-5,9,11},{-1,11,-11}},{{-9,-4,-18}
 
 int main(){
 	printf("L1_W\n");
-	trans_new(1,16,3,L1_W,L1_OUT_WEIGHT,1,8);
+	trans_new(1,16,3,L1_W,L1_OUT_WEIGHT,1,16);
 	printf("\n");
 	printf("L2_W\n");
-	trans_new(16,32,3,L2_W,L2_OUT_WEIGHT,4,8);
+	trans_new(16,32,3,L2_W,L2_OUT_WEIGHT,16,16);
 	printf("\n");
 	printf("L3_W\n");
-	trans_new(32,64,3,L3_W,L3,4,4);
+	trans_new(32,64,3,L3_W,L3,16,8);
 	printf("\n");
 	printf("L4_W\n");
-	trans_new(64,64,3,L4_W,L4,4,4);
+	trans_new(64,64,3,L4_W,L4,8,8);
 
 }

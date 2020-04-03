@@ -522,7 +522,7 @@ struct ap_axis{
 };
 void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1);
 void topTest(){
-	unsigned Batch = 4;
+	unsigned Batch = 8;
 	ap_uint<8> IMG[2][C1_SIZE][C1_SIZE] =
 	{{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
