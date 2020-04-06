@@ -1,4 +1,4 @@
-//#define AP_INT_MAX_W 2048
+#define AP_INT_MAX_W 8192
 #include "config.h"
 #include <hls_stream.h>
 #include <assert.h>
@@ -592,6 +592,7 @@ void topTest(){
 				int a = j/2;
 				int b = (j%2)*14+k;
 				temp.data((k+1)*8-1,k*8) = IMG[bat%2][a][b];
+//				temp.data((k+1)*8-1,k*8) = 1;
 				temp.keep(k,k) = 1;
 			}
 			in.write(temp);

@@ -173,9 +173,6 @@ ap_int<MBit*ASize*WSize> Orbital_Gemm_Debug(ap_uint<ABit*ASize*Depth> activation
 }
 template<unsigned Depth,unsigned ASize,unsigned WSize,unsigned ABit,unsigned WBit,unsigned MBit>
 ap_int<MBit*ASize*WSize> Orbital_Gemm(ap_uint<ABit*ASize*Depth> activation,ap_int<WBit*WSize*Depth> weight){
-//#pragma HLS interface ap_none port=activation
-//#pragma HLS interface ap_none port=weight
-//#pragma HLS interface ap_none port=o
 	ap_int<WBit> W[WSize][Depth];
 	ap_uint<ABit> A[ASize][Depth];
 	ap_int<MBit> O[ASize][WSize];
@@ -333,145 +330,201 @@ void ConvStreamGenerator_Batch_CF(hls::stream<ap_uint<Batch*IOBit*IOP> >& in,hls
 	}
 }
 
-// template<unsigned OutChannel,unsigned InChannel,unsigned Pixs,unsigned Depth,unsigned Batch,unsigned ABit,unsigned InP,unsigned MidP>
-// void ActGenerator(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<ap_uint<ABit*Batch*Depth> >& out[InP],unsigned reps = 1){
-// 	const unsigned InPack = InChannel / InP;
-// 	const unsigned MidPack = OutChannel / MidP;
-// 	for(int rep = 0;rep < reps;rep++){
-// 		for(int i = 0;i < Pixs;i++){
-// 			for(int inp = 0;inp < InPack;inp++){
-// 				ap_uint<ABit*Batch*Depth> act[InP];
-// 				for(unsigned depth = 0;depth < Depth;depth++){
-// 					ap_uint<Batch*ABit*InP> InTemp = in.read();
-// 					for(unsigned inp = 0;inp < InP;inp++){
-// #pragma HLS UNROLL
-// 						for(unsigned batch = 0;batch < Batch;batch++){
-// #pragma HLS UNROLL
-// 							act[inp]((batch*Depth+depth+1)*ABit-1,(batch*Depth+depth)*ABit) = InTemp((inp*Batch+batch+1)*ABit-1,(inp*Batch+batch)*ABit);
-// 						}
-// 					}
-// 				}
-// 				for(unsigned m = 0;m < MidPack;m++){
-// 					for(unsigned inp = 0;inp < InP;inp++){
-// #pragma HLS UNROLL
-// 						out[inp].write(act[inp]);
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
-// }
+template<unsigned OutChannel,unsigned InChannel,unsigned Pixs,unsigned Depth,unsigned Batch,unsigned ABit,unsigned InP,unsigned MidP>
+void ActGenerator(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<ap_uint<InP*ABit*Batch*Depth> >& out,unsigned reps = 1){
+	const unsigned InPack = InChannel / InP;
+	const unsigned MidPack = OutChannel / MidP;
+	// unsigned num = 0;
+	for(unsigned rep = 0;rep < reps;rep++){
+		for(unsigned i = 0;i < Pixs;i++){
+			for(unsigned inp = 0;inp < InPack;inp++){
+				ap_uint<ABit*Batch*Depth> act[InP];
+				for(unsigned depth = 0;depth < Depth;depth++){
+					ap_uint<Batch*ABit*InP> InTemp = in.read();
+					for(unsigned inp = 0;inp < InP;inp++){
+#pragma HLS UNROLL
+						for(unsigned batch = 0;batch < Batch;batch++){
+#pragma HLS UNROLL
+							act[inp]((batch*Depth+depth+1)*ABit-1,(batch*Depth+depth)*ABit) = InTemp((inp*Batch+batch+1)*ABit-1,(inp*Batch+batch)*ABit);
+						}
+					}
+				}
+				for(unsigned m = 0;m < MidPack;m++){
+					ap_uint<InP*ABit*Batch*Depth> OutTemp;
+					for(unsigned inp = 0;inp < InP;inp++){
+#pragma HLS UNROLL
+						OutTemp((inp+1)*ABit*Batch*Depth-1,inp*ABit*Batch*Depth) = act[inp];
+					}
+					out.write(OutTemp);
+					// num++;
+				}
+			}
+		}
+	}
+	// cout << "act generator " << num << endl;
+}
 
-// template<unsigned OutChannel,unsigned InChannel,unsigned KSize,unsigned Pixs,unsigned Depth,unsigned Batch,unsigned WBit,unsigned MidP,unsigned InP>
-// void WeiGenerator(const ap_int<WBit*KSize*KSize> Weight[OutChannel][InChannel],hls::stream<ap_int<WBit*MidP*Depth> >& out[InP],unsigned reps = 1){
-// 	const unsigned MidPack = OutChannel / MidP;
-// 	for(int rep = 0;rep < reps;rep++){
-// 		for(int i = 0;i < Pixs;i++){
-// #pragma HLS PIPELINE II = Depth
-// 			ap_int<WBit*MidP*Depth> wei[InP];
-// 			for(unsigned mpack = 0;mpack < MidPack;mpack++){
-// 				Orbital:for(unsigned inp = 0;inp < InP;inp++){
-// #pragma HLS UNROLL
-// 					//one orbital
-// 					unsigned NInChannel = ipack * InP + inp;
-// 					ap_int<MBit*Batch*MidP> res;
-// 					for(unsigned midp = 0;midp < MidP;midp++){
-// #pragma HLS UNROLL
-// 						unsigned NOutChannel = mpack * MidP + midp;
-// 						wei[inp]((midp+1)*Depth*WBit-1,midp*Depth*WBit) = Weight[NOutChannel][NInChannel];
-// 					}
-// 				}
-// 			}
-// 			for(unsigned inp = 0;inp < InP;inp++){
-// #pragma HLS UNROLL
-// 				out[inp].write(wei[inp]);
-// 			}
-// 		}
-// 	}
-// }
+template<unsigned OutChannel,unsigned InChannel,unsigned Pixs,unsigned Depth,unsigned Batch,unsigned WBit,unsigned InP,unsigned MidP>
+void WeiGenerator(const ap_int<WBit*Depth> Weight[OutChannel][InChannel],hls::stream<ap_int<InP*WBit*MidP*Depth> >& out,unsigned reps = 1){
+	const unsigned InPack = InChannel / InP;
+	const unsigned MidPack = OutChannel / MidP;
+	// unsigned num = 0;
+	for(unsigned rep = 0;rep < reps;rep++){
+		for(unsigned i = 0;i < Pixs;i++){
+			ap_int<WBit*MidP*Depth> wei[InP];
+			for(unsigned ipack = 0;ipack < InPack;ipack++){
+				for(unsigned mpack = 0;mpack < MidPack;mpack++){
+#pragma HLS PIPELINE II = Depth
+					Orbital:for(unsigned inp = 0;inp < InP;inp++){
+#pragma HLS UNROLL
+						//one orbital
+						unsigned NInChannel = ipack * InP + inp;
+						for(unsigned midp = 0;midp < MidP;midp++){
+#pragma HLS UNROLL
+							unsigned NOutChannel = mpack * MidP + midp;
+							wei[inp]((midp+1)*Depth*WBit-1,midp*Depth*WBit) = Weight[NOutChannel][NInChannel];
+						}
+					}
+					ap_int<InP*WBit*MidP*Depth> OutTemp;
+					for(unsigned inp = 0;inp < InP;inp++){
+#pragma HLS UNROLL
+						OutTemp((inp+1)*WBit*MidP*Depth-1,inp*WBit*MidP*Depth) = wei[inp];
+					}
+					out.write(OutTemp);
+					// num++;
+				}
+			}
+		}
+	}
+	// cout << "wei generator " << num << endl;
+}
 
-// template<unsigned Pixs,unsigned Depth,unsigned ASize,unsigned WSize,unsigned ABit,unsigned WBit,unsigned MBit,unsigned InP>
-// void Orbital_Gemm_Str(hls::stream<ap_uint<ABit*ASize*Depth> >& activation[InP],hls::stream<ap_int<WBit*WSize*Depth> >& weight[InP],hls::stream<ap_int<MBit*ASize*WSize> >& out,unsigned reps = 1){
-// 	for(int rep = 0;rep < reps;rep++){
-// 		for(int i = 0;i < Pixs;i++){
-// 			ap_int<MBit*ASize*WSize> res[InP];
-// 			ap_int<MBit*ASize*WSize> res_sum;
-// 			ap_uint<ABit*ASize*Depth> act[InP];
-// 			ap_int<WBit*WSize*Depth> wei[InP];
-// 			for(int j = 0;j < InP;j++){
-// #pragma HLS UNROLL
-// 				act[j] = activation[j].read();
-// 				wei[j] = weight[j].read();
-// 				res[j] = Orbital_Gemm<Depth,Batch,MidP,ABit,WBit,MBit>(act[j],wei[j]);
-// 			}
-// 			for(unsigned j = 0; j < MidP; j++){
-// #pragma HLS UNROLL
-// 				for(unsigned k = 0; k < Batch;k++){
-// #pragma HLS UNROLL
-// 					for(unsigned l = 0;l < MidPack;l++){
-// #pragma HLS UNROLL						
-// 						if(mpack == l){
-// 							MidArray[l*MidP*Batch+j*Batch+k] += res((j*Batch+k+1)*MBit-1,(j*Batch+k)*MBit);						
-// 						}
-// 					}
-// 				}
-// 			}
-// 			out.write(res);
+template<unsigned OutChannel,unsigned InChannel,unsigned Pixs,unsigned Depth,unsigned Batch,unsigned MidP,unsigned ABit,unsigned WBit,unsigned MBit,unsigned InP>
+void Orbital_Gemm_Str(hls::stream<ap_uint<InP*ABit*Batch*Depth> >& activation,hls::stream<ap_int<InP*WBit*MidP*Depth> >& weight,hls::stream<ap_int<MBit*Batch*MidP> >& out,unsigned reps = 1){
+	const unsigned InPack = InChannel / InP;
+	const unsigned MidPack = OutChannel / MidP;
+	// unsigned num = 0;
+	for(int rep = 0;rep < reps;rep++){
+		for(int i = 0;i < Pixs;i++){
+			ap_int<MBit*Batch*MidP> res[InP];
+			ap_int<MBit*Batch*MidP> res_sum;
+			ap_uint<ABit*Batch*Depth> act[InP];
+			ap_int<WBit*MidP*Depth> wei[InP];
+			for(unsigned ipack = 0;ipack < InPack;ipack++){
+				for(unsigned mpack = 0;mpack < MidPack;mpack++){
+					ap_uint<InP*ABit*Batch*Depth> Atemp = activation.read();
+					ap_int<InP*WBit*MidP*Depth> Wtemp = weight.read();
+					for(unsigned j = 0;j < InP;j++){
+#pragma HLS UNROLL
+						act[j] = Atemp((j+1)*ABit*Batch*Depth-1,j*ABit*Batch*Depth);
+						wei[j] = Wtemp((j+1)*WBit*MidP*Depth-1,j*WBit*MidP*Depth);
+						// cout << i << " act " << act[j] << endl;
+						// cout << i << " wei " << wei[j] << endl;
+						res[j] = Orbital_Gemm<Depth,Batch,MidP,ABit,WBit,MBit>(act[j],wei[j]);
+						// cout << i << " res " << res[j] << endl;
+					}
+					res_sum = 0;
+					for(unsigned j = 0; j < MidP; j++){
+#pragma HLS UNROLL
+						for(unsigned k = 0; k < Batch;k++){
+#pragma HLS UNROLL		
+							for(unsigned inp = 0;inp < InP;inp++){ 
+								res_sum((j*Batch+k+1)*MBit-1,(j*Batch+k)*MBit) = (ap_int<MBit>)res[inp]((j*Batch+k+1)*MBit-1,(j*Batch+k)*MBit) + (ap_int<MBit>)res_sum((j*Batch+k+1)*MBit-1,(j*Batch+k)*MBit) ;						
+							}
+						}
+					}
+					out.write(res_sum);
+					// num++;
+				}
+			}
+		}
+	}
+	// cout << "Orbital_Gemm " << num << endl;
+}
 
-// 		}
-// 	}
-// }
+template<unsigned OutChannel,unsigned InChannel,unsigned Pixs,unsigned Depth,unsigned Batch,unsigned ABit,unsigned WBit,unsigned MBit,unsigned InP,unsigned MidP,unsigned OutP>
+void RELU_Str(hls::stream<ap_int<MBit*Batch*MidP> >& res,hls::stream<ap_uint<Batch*ABit*OutP> >& out,const ap_int<WBit> Bias[OutChannel],const unsigned Scale,unsigned reps = 1){
+	const unsigned InPack = InChannel / InP;
+	const unsigned MidPack = OutChannel / MidP;
+	const unsigned OutPack = OutChannel / OutP;
+	ap_int<MBit> MidArray[Batch*OutChannel];
+	ap_uint<ABit> OutArray[Batch*OutChannel];
+#pragma HLS array_partition variable=MidArray complete
+#pragma HLS array_partition variable=OutArray complete
+	// unsigned num = 0;
+	for(unsigned rep = 0;rep < reps;rep++){
+		for(unsigned i = 0;i < Pixs;i++){
+			for(unsigned w = 0;w < OutChannel;w++){
+#pragma HLS UNROLL
+				for(unsigned q = 0;q < Batch;q++){
+#pragma HLS UNROLL
+					MidArray[w*Batch+q] = Bias[w];
+				}
+			}
+			for(unsigned ipack = 0;ipack < InPack;ipack++){
+				for(unsigned mpack = 0;mpack < MidPack;mpack++){
+					ap_int<MBit*Batch*MidP> ResTemp = res.read();
+					for(unsigned m = 0;m < MidP;m++){
+#pragma HLS UNROLL
+						for(unsigned b = 0;b < Batch;b++){
+#pragma HLS UNROLL
+							for(unsigned l = 0;l < MidPack;l++){
+#pragma HLS UNROLL						
+								if(mpack == l)
+									MidArray[l*MidP*Batch+m*Batch+b] += ResTemp((m*Batch+b+1)*MBit-1,(m*Batch+b)*MBit);						
+								// MidArray[m*Batch+b] += ResTemp((m*Batch+b+1)*MBit-1,(m*Batch+b)*MBit);
+								// if(i == 0 && b == 0){
+								// 	cout << ResTemp((m*Batch+b+1)*MBit-1,(m*Batch+b)*MBit) << endl;
+								// }
+							}
+						}
+					}
+				}
+			}
+			for(unsigned opack = 0;opack < OutPack;opack++){
+				ap_uint<Batch*ABit*OutP> OutTemp;
+				for(unsigned outp = 0;outp < OutP;outp++){
+					for(unsigned batch = 0;batch < Batch;batch++){
+						unsigned NChannel = opack*OutP + outp;
+						unsigned OToffset = outp*Batch + batch;
+						// if(batch == 0)
+						// 	cout << i << " " << MidArray[NChannel*Batch+batch] << endl;
+						OutArray[NChannel*Batch+batch] = SCALE_RELU_ScaleBit<ABit,MBit>(MidArray[NChannel*Batch+batch],Scale);
+						// cout << OutArray[batch][NChannel] << endl;
+						OutTemp((OToffset+1)*ABit-1,OToffset*ABit) = OutArray[NChannel*Batch+batch];
+					}
+				}
+				out.write(OutTemp);
+				// num++;
+				// cout << OutTemp << endl << endl;
+			}
+		}
+	}
+	// cout << "relu num " << num << endl;
+}
 
-// void RELU_Str(hls::stream<ap_int<MBit*ASize*WSize> >& res,hls::stream<ap_uint<Batch*ABit*OutP> >& out,unsigned reps = 1){
-// 	const unsigned OutPack = OutChannel / OutP;
-// 	ap_int<MBit> MidArray[Batch*OutChannel];
-// 	for(int rep = 0;rep < reps;rep++){
-// 		for(int i = 0;i < Tems;i++){
-// 			for(unsigned opack = 0;opack < OutPack;opack++){
-// 				ap_uint<Batch*ABit*OutP> OutTemp;
-// 				for(unsigned outp = 0;outp < OutP;outp++){
-// 					for(unsigned batch = 0;batch < Batch;batch++){
-// 						unsigned NChannel = opack*OutP + outp;
-// 						unsigned OToffset = outp*Batch + batch;
-// 						OutArray[NChannel*Batch+batch] = SCALE_RELU_ScaleBit<ABit,MBit>(MidArray[NChannel*Batch+batch],Scale);
-// 						// cout << OutArray[batch][NChannel] << endl;
-// 						OutTemp((OToffset+1)*ABit-1,OToffset*ABit) = OutArray[NChannel*Batch+batch];
-// 					}
-// 				}
-// 				out.write(OutTemp);
-// 				// cout << OutTemp << endl << endl;
-// 			}
-// 		}
-// 	}
-// }
-
-// template<unsigned Batch,unsigned KSize,unsigned WBit,unsigned ABit,unsigned MBit,unsigned InChannel,unsigned OutChannel,unsigned Stride,unsigned Size,unsigned InP,unsigned MidP,unsigned OutP>
-// void Conv_MulAct_Oribital_Str(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<ap_uint<Batch*ABit*OutP> >& out,const ap_int<WBit*KSize*KSize> Weight[OutChannel][InChannel],const ap_int<WBit> Bias[OutChannel],const unsigned Scale,unsigned reps = 1){
-// 	assert(InChannel%InP == 0);
-// 	assert(OutChannel%OutP == 0);
-// 	assert(OutChannel%MidP == 0);
-// 	const unsigned Depth = KSize*KSize;
-// 	const unsigned InPack = InChannel / InP;
-// 	const unsigned MidPack = OutChannel / MidP;
-// 	const unsigned OutPack = OutChannel / OutP;
-
-// #pragma HLS DATAFLOW
-// 	res = Orbital_Gemm<Depth,Batch,MidP,ABit,WBit,MBit>(act[inp],wei[inp]);
-// 	for(unsigned opack = 0;opack < OutPack;opack++){
-// 		ap_uint<Batch*ABit*OutP> OutTemp;
-// 		for(unsigned outp = 0;outp < OutP;outp++){
-// 			for(unsigned batch = 0;batch < Batch;batch++){
-// 				unsigned NChannel = opack*OutP + outp;
-// 				unsigned OToffset = outp*Batch + batch;
-// 				OutArray[NChannel*Batch+batch] = SCALE_RELU_ScaleBit<ABit,MBit>(MidArray[NChannel*Batch+batch],Scale);
-// 				// cout << OutArray[batch][NChannel] << endl;
-// 				OutTemp((OToffset+1)*ABit-1,OToffset*ABit) = OutArray[NChannel*Batch+batch];
-// 			}
-// 		}
-// 		out.write(OutTemp);
-// 		// cout << OutTemp << endl << endl;
-// 	}
-// }
+template<unsigned Batch,unsigned KSize,unsigned WBit,unsigned ABit,unsigned MBit,unsigned InChannel,unsigned OutChannel,unsigned Stride,unsigned Size,unsigned InP,unsigned MidP,unsigned OutP>
+void Conv_MulAct_Oribital_Str(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<ap_uint<Batch*ABit*OutP> >& out,const ap_int<WBit*KSize*KSize> Weight[OutChannel][InChannel],const ap_int<WBit> Bias[OutChannel],const unsigned Scale,unsigned reps = 1){
+	assert(InChannel%InP == 0);
+	assert(OutChannel%OutP == 0);
+	assert(OutChannel%MidP == 0);
+	const unsigned Depth = KSize*KSize;
+	const unsigned InPack = InChannel / InP;
+	const unsigned MidPack = OutChannel / MidP;
+	const unsigned OutPack = OutChannel / OutP;
+	const unsigned Pixs = ((Size-KSize)/Stride+1)*((Size-KSize)/Stride+1);
+#pragma HLS DATAFLOW
+	hls::stream<ap_uint<InP*ABit*Batch*Depth> > acts;
+	hls::stream<ap_int<InP*WBit*MidP*Depth> > weis;
+	hls::stream<ap_int<MBit*Batch*MidP> > gemmout;
+#pragma HLS stream variable=acts depth=1 off 
+#pragma HLS stream variable=weis depth=1 off 
+#pragma HLS stream variable=gemmout depth=1 off 
+	ActGenerator<OutChannel,InChannel,Pixs,Depth,Batch,ABit,InP,MidP>(in,acts,reps);
+	WeiGenerator<OutChannel,InChannel,Pixs,Depth,Batch,WBit,InP,MidP>(Weight,weis,reps);
+	Orbital_Gemm_Str<OutChannel,InChannel,Pixs,Depth,Batch,MidP,ABit,WBit,MBit,InP>(acts,weis,gemmout,reps);
+	RELU_Str<OutChannel,InChannel,Pixs,Depth,Batch,ABit,WBit,MBit,InP,MidP,OutP>(gemmout,out,Bias,Scale,reps);
+}
 
 template<unsigned Batch,unsigned KSize,unsigned WBit,unsigned ABit,unsigned MBit,unsigned InChannel,unsigned OutChannel,unsigned Stride,unsigned Size,unsigned InP,unsigned MidP,unsigned OutP>
 void Conv_MulAct_Oribital(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<ap_uint<Batch*ABit*OutP> >& out,const ap_int<WBit*KSize*KSize> Weight[OutChannel][InChannel],const ap_int<WBit> Bias[OutChannel],const unsigned Scale,unsigned reps = 1){
@@ -529,7 +582,10 @@ void Conv_MulAct_Oribital(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<
 						}
 
 						//calculate
+						// cout << i << " act " << act[inp] << endl;
+						// cout << i << " wei " << wei[inp] << endl;
 						res = Orbital_Gemm<Depth,Batch,MidP,ABit,WBit,MBit>(act[inp],wei[inp]);
+						// cout << i << " res " << res << endl;
 						//write
 						for(unsigned j = 0; j < MidP; j++){
 #pragma HLS UNROLL
@@ -539,6 +595,9 @@ void Conv_MulAct_Oribital(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<
 #pragma HLS UNROLL						
 									if(mpack == l)
 										MidArray[l*MidP*Batch+j*Batch+k] += res((j*Batch+k+1)*MBit-1,(j*Batch+k)*MBit);						
+									// if(i == 0 && k == 0){
+									// 	cout << res((j*Batch+k+1)*MBit-1,(j*Batch+k)*MBit) << endl;
+									// }
 								}
 							}
 						}
@@ -551,6 +610,8 @@ void Conv_MulAct_Oribital(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<
 							for(unsigned batch = 0;batch < Batch;batch++){
 								unsigned NChannel = opack*OutP + outp;
 								unsigned OToffset = outp*Batch + batch;
+								// if(batch == 0)
+								// 	cout << i << " " << MidArray[NChannel*Batch+batch] << endl;
 								OutArray[NChannel*Batch+batch] = SCALE_RELU_ScaleBit<ABit,MBit>(MidArray[NChannel*Batch+batch],Scale);
 								// cout << OutArray[batch][NChannel] << endl;
 								OutTemp((OToffset+1)*ABit-1,OToffset*ABit) = OutArray[NChannel*Batch+batch];
@@ -577,7 +638,7 @@ void ConvLayer_NOPAD_Orbital(hls::stream<ap_uint<Batch*InP*ABit> >& in,hls::stre
 	hls::stream<ap_uint<Batch*MidP_i*ABit> > in_m;
 	splitStream_Length<Batch*InP*ABit,Batch*MidP_i*ABit,StrLen>(in,in_m,reps);
 	ConvStreamGenerator_Batch<Batch,KSize,Size,InChannel,MidP_i,ABit,Stride>(in_m,Conv_Str,reps);
-	Conv_MulAct_Oribital<Batch,KSize,WBit,ABit,MBit,InChannel,OutChannel,Stride,Size,MidP_i,MidP_o,OutP>(Conv_Str,out,Weight,Bias,Scale,reps);
+	Conv_MulAct_Oribital_Str<Batch,KSize,WBit,ABit,MBit,InChannel,OutChannel,Stride,Size,MidP_i,MidP_o,OutP>(Conv_Str,out,Weight,Bias,Scale,reps);
 }
 
 template<unsigned KSize,unsigned Size,unsigned InChannel,unsigned OutChannel,unsigned InP,unsigned MidP_i,unsigned MidP_o,unsigned OutP,unsigned Stride,unsigned WBit,unsigned ABit,unsigned MBit>

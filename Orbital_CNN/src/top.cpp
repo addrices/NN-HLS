@@ -82,7 +82,41 @@ void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1)
 	Trans_BatchStr<Batch,8,ABIT,14,C1_INP,56>(in112,C1_in,reps);
 
 	C1:ConvLayer_NOPAD_Orbital<Batch,C1_KSIZE,C1_SIZE,C1_INCHANNEL,C1_OUTCHANNEL,C1_INP,C1_MIDP_I,C1_MIDP_O,C1_OUTP,C1_STRIDE,WBIT,ABIT,C1_MBIT>(C1_in,C1_out,C1_W,C1_B,C1_SCALEBIT,reps);
+//	unsigned OutPack = C1_OUTCHANNEL/C1_OUTP;
+//	for(int i = 0;i < 26;i++){
+//		for(int j = 0;j < 26;j++){
+//			for(int m = 0;m < OutPack;m++){
+//				ap_uint<Batch*C1_OUTP*ABIT> otemp = C1_out.read();
+//				for(int n = 0;n < C1_OUTP;n++){
+//					for(int q = 0;q < Batch;q++){
+//						unsigned offset = n*Batch+q;
+//						ap_uint<ABIT> cc = otemp((offset+1)*ABIT-1,offset*ABIT);
+//						cout << cc << " " ;
+//					}
+//				}
+//			}
+//			cout << endl;
+//		}
+//	}
+//	return;
 	C2:ConvLayer_NOPAD_Orbital<Batch,C2_KSIZE,C2_SIZE,C2_INCHANNEL,C2_OUTCHANNEL,C2_INP,C2_MIDP_I,C2_MIDP_O,C2_OUTP,C2_STRIDE,WBIT,ABIT,C2_MBIT>(C1_out,C2_out,C2_W,C2_B,C2_SCALEBIT,reps);
+//		unsigned OutPack = C2_OUTCHANNEL/C2_OUTP;
+//		for(int i = 0;i < 24;i++){
+//			for(int j = 0;j < 24;j++){
+//				for(int m = 0;m < OutPack;m++){
+//					ap_uint<Batch*C2_OUTP*ABIT> otemp = C2_out.read();
+//					for(int n = 0;n < C2_OUTP;n++){
+//						for(int q = 0;q < Batch;q++){
+//							unsigned offset = n*Batch+q;
+//							ap_uint<ABIT> cc = otemp((offset+1)*ABIT-1,offset*ABIT);
+//							cout << cc << " " ;
+//						}
+//					}
+//				}
+//				cout << endl;
+//			}
+//		}
+
 	P2:MaxPool_IOP<P2_PSIZE,ABIT,P2_SIZE,P2_CHANNEL*Batch,P2_INP*Batch,P2_OUTP*Batch>(C2_out,P2_out,reps);
 	C3:ConvLayer_NOPAD_Orbital<Batch,C3_KSIZE,C3_SIZE,C3_INCHANNEL,C3_OUTCHANNEL,C3_INP,C3_MIDP_I,C3_MIDP_O,C3_OUTP,C3_STRIDE,WBIT,ABIT,C3_MBIT>(P2_out,C3_out,C3_W,C3_B,C3_SCALEBIT,reps);
 	P3:MaxPool_IOP<P3_PSIZE,ABIT,P3_SIZE,P3_CHANNEL*Batch,P3_INP*Batch,P3_OUTP*Batch>(C3_out,P3_out,reps);
