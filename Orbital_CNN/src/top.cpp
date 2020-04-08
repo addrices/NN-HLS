@@ -51,13 +51,26 @@ void DelHead(
 	}
 }
 
+// unsigned depth = 9;
+// unsigned wbit = 8;
+// unsigned abit = 8;
+// unsigned mbit = 16;
+// unsigned asize = 8;
+// unsigned wsize = 8;
+// void top(hls::stream<ap_int<depth*abit*asize> >& a,hls::stream<ap_uint<depth*abit*asize> >& b,hls::stream<ap_int<20*8*8> >& c){
+// 	template<unsigned Depth,unsigned ASize,unsigned WSize,unsigned ABit,unsigned WBit,unsigned MBit>
+// 	ap_int<8*8*9> act = a.read;
+
+// }
+
+
 void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1){
 #pragma HLS INTERFACE axis register both port=in
 #pragma HLS INTERFACE axis register both port=out
 #pragma HLS INTERFACE s_axilite port=reps bundle=control
 #pragma HLS INTERFACE s_axilite port=return bundle=control
 #pragma HLS DATAFLOW
-	const unsigned Batch = 8;
+	const unsigned Batch = 4;
 	hls::stream<ap_uint<8> > In8;
 
 	hls::stream<ap_uint<Batch*C1_INP*ABIT> > C1_in;
@@ -134,7 +147,4 @@ void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1)
 	AddLast<10>(tout,out,reps);
 	return;
 }
-
-
-
 
