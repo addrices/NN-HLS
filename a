@@ -7,15 +7,7 @@ FAddSub_nodsp FAddSub_fulldsp FMul_nodsp FMul_meddsp FMul_fulldsp FMul_maxdsp FR
 FRecip_nodsp FRecip_fulldsp FLog_nodsp FLog_meddsp FLog_fulldsp FExp_nodsp FExp_meddsp FExp_fulldsp 
 DAddSub_nodsp DAddSub_fulldsp DMul_nodsp DMul_meddsp DMul_fulldsp DMul_maxdsp DLog_nodsp DLog_meddsp 
 DLog_fulldsp DExp_nodsp DExp_meddsp DExp_fulldsp
-act generator 24336
-wei generator 24336
-Orbital_Gemm 2704
-act generator 165888
-wei generator 165888
-Orbital_Gemm 18432
-act generator 230400
-wei generator 230400
-Orbital_Gemm 25600
-act generator 82944
-wei generator 82944
-Orbital_Gemm 9216
+0 0 4 0 1 0
+0 0 4 1 1 0
+0 0 4 2 1 0
+0 0 4 3 1 0

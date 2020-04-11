@@ -63,6 +63,17 @@ void DelHead(
 
 // }
 
+// const unsigned asize = 8;
+// const unsigned wsize = 8;
+// const unsigned depth = 9;
+// const unsigned abit = 8;
+// const unsigned wbit = 8;
+// const unsigned mbit = 16;
+// const unsigned pixs = 100;
+// void top(hls::stream<ap_uint<abit*asize> >& act,hls::stream<ap_int<wbit*wsize> >& wei,hls::stream<ap_int<mbit*asize*wsize> >& out){
+// 	Gemm_str<depth,asize,wsize,abit,wbit,mbit,pixs>(act,wei,out,1);
+// }
+
 
 void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1){
 #pragma HLS INTERFACE axis register both port=in
@@ -104,7 +115,8 @@ void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1)
 //					for(int q = 0;q < Batch;q++){
 //						unsigned offset = n*Batch+q;
 //						ap_uint<ABIT> cc = otemp((offset+1)*ABIT-1,offset*ABIT);
-//						cout << cc << " " ;
+//						if(q == 0)
+//							cout << cc << " " ;
 //					}
 //				}
 //			}
@@ -113,22 +125,23 @@ void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1)
 //	}
 //	return;
 	C2:ConvLayer_NOPAD_Orbital<Batch,C2_KSIZE,C2_SIZE,C2_INCHANNEL,C2_OUTCHANNEL,C2_INP,C2_MIDP_I,C2_MIDP_O,C2_OUTP,C2_STRIDE,WBIT,ABIT,C2_MBIT>(C1_out,C2_out,C2_W,C2_B,C2_SCALEBIT,reps);
-//		unsigned OutPack = C2_OUTCHANNEL/C2_OUTP;
-//		for(int i = 0;i < 24;i++){
-//			for(int j = 0;j < 24;j++){
-//				for(int m = 0;m < OutPack;m++){
-//					ap_uint<Batch*C2_OUTP*ABIT> otemp = C2_out.read();
-//					for(int n = 0;n < C2_OUTP;n++){
-//						for(int q = 0;q < Batch;q++){
-//							unsigned offset = n*Batch+q;
-//							ap_uint<ABIT> cc = otemp((offset+1)*ABIT-1,offset*ABIT);
-//							cout << cc << " " ;
-//						}
-//					}
-//				}
-//				cout << endl;
-//			}
-//		}
+		unsigned OutPack = C2_OUTCHANNEL/C2_OUTP;
+		for(int i = 0;i < 24;i++){
+			for(int j = 0;j < 24;j++){
+				for(int m = 0;m < OutPack;m++){
+					ap_uint<Batch*C2_OUTP*ABIT> otemp = C2_out.read();
+					for(int n = 0;n < C2_OUTP;n++){
+						for(int q = 0;q < Batch;q++){
+							unsigned offset = n*Batch+q;
+							ap_uint<ABIT> cc = otemp((offset+1)*ABIT-1,offset*ABIT);
+							cout << cc << " " ;
+						}
+					}
+				}
+				cout << endl;
+			}
+		}
+		return;
 
 	P2:MaxPool_IOP<P2_PSIZE,ABIT,P2_SIZE,P2_CHANNEL*Batch,P2_INP*Batch,P2_OUTP*Batch>(C2_out,P2_out,reps);
 	C3:ConvLayer_NOPAD_Orbital<Batch,C3_KSIZE,C3_SIZE,C3_INCHANNEL,C3_OUTCHANNEL,C3_INP,C3_MIDP_I,C3_MIDP_O,C3_OUTP,C3_STRIDE,WBIT,ABIT,C3_MBIT>(P2_out,C3_out,C3_W,C3_B,C3_SCALEBIT,reps);

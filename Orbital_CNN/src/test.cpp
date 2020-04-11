@@ -591,8 +591,8 @@ void topTest(){
 			for(int k = 0; k < 14;k++){
 				int a = j/2;
 				int b = (j%2)*14+k;
-				temp.data((k+1)*8-1,k*8) = IMG[bat%2][a][b];
-//				temp.data((k+1)*8-1,k*8) = 1;
+//				temp.data((k+1)*8-1,k*8) = IMG[bat%2][a][b];
+				temp.data((k+1)*8-1,k*8) = k%3;
 				temp.keep(k,k) = 1;
 			}
 			in.write(temp);
@@ -603,14 +603,14 @@ void topTest(){
 
 	top(in,out,1);
 
-	for(int i = 0;i < 10;i++){
-		ap_axis OTemp = out.read();
-		for(int j = 0; j < 16;j++){
-			ap_uint<ABIT> q1 = OTemp.data((j+1)*8-5,j*8);
-			cout << q1 << " " ;
-		}
-		cout << endl;
-	}
+//	for(int i = 0;i < 10;i++){
+//		ap_axis OTemp = out.read();
+//		for(int j = 0; j < 16;j++){
+//			ap_uint<ABIT> q1 = OTemp.data((j+1)*8-5,j*8);
+//			cout << q1 << " " ;
+//		}
+//		cout << endl;
+//	}
 }
 
 int main(){
