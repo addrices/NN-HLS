@@ -1108,7 +1108,27 @@ void ConvLayer_NOPAD_Orbital(hls::stream<ap_uint<Batch*InP*ABit> >& in,hls::stre
 	Conv_MulAct_Orbital<Batch,KSize,WBit,ABit,MBit,InChannel,OutChannel,Stride,Size,MidP_i,MidP_o,OutP>(Conv_Str1,out1,Weight,Bias,Scale,reps);
 	cout << "new" << endl;
 	Conv_MulAct_Orbital_New<Batch,KSize,WBit,ABit,MBit,InChannel,OutChannel,Stride,Size,MidP_i,MidP_o,OutP>(Conv_Str2,out2,Weight,Bias,Scale,reps);
-
+		unsigned OutPack = OutChannel/OutP;
+		for(int i = 0;i < (Size-KSize+1);i++){
+			for(int j = 0;j < (Size-KSize+1);j++){
+				for(int m = 0;m < OutPack;m++){
+					ap_uint<Batch*OutP*ABit> otemp1 = out1.read();
+					ap_uint<Batch*OutP*ABit> otemp2 = out2.read();
+					out.write(otemp1);
+					for(int n = 0;n < OutP;n++){
+						for(int q = 0;q < Batch;q++){
+							unsigned offset = n*Batch+q;
+							ap_uint<ABit> cc1 = otemp1((offset+1)*ABit-1,offset*ABit);
+							ap_uint<ABit> cc2 = otemp2((offset+1)*ABit-1,offset*ABit);
+							if(cc1 != cc2){
+								cout << i << " " << j << " " << n << " " << q << " " << cc1 << " " << cc2 << endl;
+							}
+						}
+					}
+				}
+				// cout << endl;
+			}
+		}
 }
 
 template<unsigned KSize,unsigned Size,unsigned InChannel,unsigned OutChannel,unsigned InP,unsigned MidP_i,unsigned MidP_o,unsigned OutP,unsigned Stride,unsigned WBit,unsigned ABit,unsigned MBit>
