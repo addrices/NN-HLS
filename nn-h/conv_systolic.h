@@ -773,15 +773,15 @@ void Conv_MulAct_Orbital(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<a
 						// if(i == 0)
 						// 	res = Orbital_Gemm_Debug<Depth,Batch,MidP,ABit,WBit,MBit>(act[inp],wei[inp]);
 						// else
-							res = Orbital_Gemm<Depth,Batch,MidP,ABit,WBit,MBit>(act[inp],wei[inp]);
+						res = Orbital_Gemm<Depth,Batch,MidP,ABit,WBit,MBit>(act[inp],wei[inp]);
 						
 						
 						// cout << i << " res " << res << endl;
 						//write
 						for(unsigned j = 0; j < MidP; j++){
-#pragma HLS UNROLL
+// #pragma HLS UNROLL
 							for(unsigned k = 0; k < Batch;k++){
-#pragma HLS UNROLL
+// #pragma HLS UNROLL
 								MidArray[mpack*MidP*Batch+j*Batch+k] += res((j*Batch+k+1)*MBit-1,(j*Batch+k)*MBit);						
 								// if(i == 0 && k == 0){
 								// 	cout << res((j*Batch+k+1)*MBit-1,(j*Batch+k)*MBit) << endl;
@@ -1097,38 +1097,7 @@ void ConvLayer_NOPAD_Orbital(hls::stream<ap_uint<Batch*InP*ABit> >& in,hls::stre
 	hls::stream<ap_uint<Batch*OutP*ABit> > out2;
 	splitStream_Length<Batch*InP*ABit,Batch*MidP_i*ABit,StrLen>(in,in_m,reps);
 	ConvStreamGenerator_Batch<Batch,KSize,Size,InChannel,MidP_i,ABit,Stride>(in_m,Conv_Str,reps);
-	hls::stream<ap_uint<Batch*MidP_i*ABit> > Conv_Str1;
-	hls::stream<ap_uint<Batch*MidP_i*ABit> > Conv_Str2;
-	for(int i = 0; i < (Size-KSize+1)*(Size-KSize+1)*KSize*KSize*InChannel/MidP_i;i++){
-		ap_uint<Batch*MidP_i*ABit> temp = Conv_Str.read();
-		Conv_Str1.write(temp);
-		Conv_Str2.write(temp);
-	}
-	cout << "orbital" << endl;
-	Conv_MulAct_Orbital<Batch,KSize,WBit,ABit,MBit,InChannel,OutChannel,Stride,Size,MidP_i,MidP_o,OutP>(Conv_Str1,out1,Weight,Bias,Scale,reps);
-	cout << "new" << endl;
-	Conv_MulAct_Orbital_New<Batch,KSize,WBit,ABit,MBit,InChannel,OutChannel,Stride,Size,MidP_i,MidP_o,OutP>(Conv_Str2,out2,Weight,Bias,Scale,reps);
-		unsigned OutPack = OutChannel/OutP;
-		for(int i = 0;i < (Size-KSize+1);i++){
-			for(int j = 0;j < (Size-KSize+1);j++){
-				for(int m = 0;m < OutPack;m++){
-					ap_uint<Batch*OutP*ABit> otemp1 = out1.read();
-					ap_uint<Batch*OutP*ABit> otemp2 = out2.read();
-					out.write(otemp1);
-					for(int n = 0;n < OutP;n++){
-						for(int q = 0;q < Batch;q++){
-							unsigned offset = n*Batch+q;
-							ap_uint<ABit> cc1 = otemp1((offset+1)*ABit-1,offset*ABit);
-							ap_uint<ABit> cc2 = otemp2((offset+1)*ABit-1,offset*ABit);
-							if(cc1 != cc2){
-								cout << i << " " << j << " " << n << " " << q << " " << cc1 << " " << cc2 << endl;
-							}
-						}
-					}
-				}
-				// cout << endl;
-			}
-		}
+	Conv_MulAct_Orbital<Batch,KSize,WBit,ABit,MBit,InChannel,OutChannel,Stride,Size,MidP_i,MidP_o,OutP>(Conv_Str,out,Weight,Bias,Scale,reps);
 }
 
 template<unsigned KSize,unsigned Size,unsigned InChannel,unsigned OutChannel,unsigned InP,unsigned MidP_i,unsigned MidP_o,unsigned OutP,unsigned Stride,unsigned WBit,unsigned ABit,unsigned MBit>
