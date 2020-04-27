@@ -197,98 +197,156 @@ void Gemm_str(hls::stream<ap_uint<ABit*ASize> >& activation,hls::stream<ap_int<W
 }
 
 template<unsigned Depth,unsigned ASize,unsigned WSize,unsigned ABit,unsigned WBit,unsigned MBit>
-inline ap_int<MBit*ASize*WSize> Orbital_Gemm(ap_uint<ABit*ASize*Depth> activation,ap_int<WBit*WSize*Depth> weight){
+ap_int<MBit*ASize*WSize> Orbital_Gemm(ap_uint<ABit*ASize*Depth> activation,ap_int<WBit*WSize*Depth> weight){
 	ap_int<WBit> W[WSize][Depth];
 	ap_uint<ABit> A[ASize][Depth];
 	ap_int<MBit> O[ASize][WSize];
 #pragma HLS array_partition variable=W complete
 #pragma HLS array_partition variable=A complete
 #pragma HLS array_partition variable=O complete
-	ap_int<MBit*ASize*WSize> o;
+
+	for(unsigned i = 0;i < WSize;i++){
+#pragma HLS UNROLL
+		for(unsigned j = 0;j < Depth;j++){
+#pragma HLS UNROLL
+			W[i][j] = weight((i*Depth+(i+j)%Depth+1)*WBit-1,(i*Depth+(i+j)%Depth)*WBit);
+			// cout << W[i][j] << ' ';
+		}
+		// cout << endl;
+	}
+
+	for(unsigned i = 0;i < ASize;i++){
+#pragma HLS UNROLL
+		for(unsigned j = 0;j < Depth;j++){
+#pragma HLS UNROLL
+			A[i][j] = activation((i*Depth+(i+j)%Depth+1)*ABit-1,(i*Depth+(i+j)%Depth)*ABit);
+			// cout << A[i][j] << ' ';
+		}
+		// cout << endl;
+	}
+
+	for(unsigned i = 0;i < ASize;i++)
+#pragma HLS UNROLL
+		for(unsigned j = 0;j < WSize;j++)
+#pragma HLS UNROLL
+			O[i][j] = 0;
+
+			// cout << "act" << endl;
+			// for(unsigned r = 0;r < ASize;r++){
+			// 	for(unsigned t = 0;t < Depth;t++){
+			// 		cout << A[r][t] << " ";
+			// 	}
+			// 	cout << endl;
+			// }
+			// cout << endl << "wei" << endl;
+			// for(unsigned r = 0;r < WSize;r++){
+			// 	for(unsigned t = 0;t < Depth;t++){
+			// 		cout << W[r][t] << " ";
+			// 	}
+			// 	cout << endl;
+			// }
+
 	for(unsigned i = 0;i < Depth;i++){
 #pragma HLS PIPELINE II = 1
-		if(i == 0){
-			for(unsigned j = 0; j < ASize; j++){
+		for(unsigned j = 0; j < ASize; j++){
 #pragma HLS UNROLL
-				for(unsigned k = 0; k < WSize;k++){
+			for(unsigned k = 0; k < WSize;k++){
 #pragma HLS UNROLL
-					ap_int<WBit> w = weight((k*Depth+(j+k)%Depth+1)*WBit-1,(k*Depth+(j+k)%Depth)*WBit);
-					ap_int<ABit> a = activation((j*Depth+(j+k)%Depth+1)*ABit-1,(j*Depth+(j+k)%Depth)*ABit);
-					ap_int<MBit> tem = w*a;
+				ap_int<MBit> tem = W[k][j] * A[j][k];
 #pragma HLS resource variable=tem core=Mul_LUT
-					O[j][k] = tem;
-				}
+				O[j][k] = O[j][k] +tem;
 			}
+		}
+		for(unsigned j = 0;j < ASize;j++){
+#pragma HLS UNROLL
+			ap_uint<ABit> ATemp = A[j][0];
+			for(unsigned d = 0;d < Depth-1;d++){
+#pragma HLS UNROLL
+				A[j][d] = A[j][d+1];
+			}
+			A[j][Depth-1] = ATemp;
+		}
+		for(unsigned k = 0;k < WSize;k++){
+			ap_int<WBit> WTemp = W[k][0];
+			for(unsigned d = 0;d < Depth-1;d++){
+#pragma HLS UNROLL
+				W[k][d] = W[k][d+1];
+			}
+			W[k][Depth-1] = WTemp;
+		}
+	}
+	ap_int<MBit*ASize*WSize> o;
+	for(unsigned c = 0; c < WSize; c++){
+#pragma HLS UNROLL
+		for(unsigned d = 0; d < ASize; d++){
+#pragma HLS UNROLL
+			o((c*ASize+d+1)*MBit-1,(c*ASize+d)*MBit) = O[d][c];
+//			cout << O[c][d] << " ";
+		}
+//		cout << endl;
+	}
+//	cout << o << endl;
+	return o;
+}
 
-			for(unsigned a = 0;a < WSize;a++){
+template<unsigned Depth,unsigned ASize,unsigned WSize,unsigned ABit,unsigned WBit,unsigned MBit>
+ap_int<MBit*ASize*WSize> Dot_Gemm(ap_uint<ABit*ASize*Depth> activation,ap_int<WBit*WSize*Depth> weight){
+	ap_int<WBit> W[WSize][Depth];
+	ap_uint<ABit> A[ASize][Depth];
+	ap_int<MBit> O[ASize][WSize];
+#pragma HLS array_partition variable=W complete
+#pragma HLS array_partition variable=A complete
+#pragma HLS array_partition variable=O complete
+
+	for(unsigned i = 0;i < WSize;i++){
 #pragma HLS UNROLL
-				for(unsigned b = 0;b < Depth;b++){
+		for(unsigned j = 0;j < Depth;j++){
 #pragma HLS UNROLL
-					if(b == 0)
-						W[a][Depth-1] = weight((a*Depth+a+1)*WBit-1,(a*Depth+a)*WBit);
-					else 
-						W[a][b-1] = weight((a*Depth+(a+b)%Depth+1)*WBit-1,(a*Depth+(a+b)%Depth)*WBit);
-					// cout << W[i][j] << ' ';
-				}
-				// cout << endl;
-			}
-			for(unsigned a = 0;a < ASize;a++){
+			W[i][j] = weight((i*Depth+j+1)*WBit-1,(i*Depth+j)*WBit);
+			// cout << W[i][j] << ' ';
+		}
+		// cout << endl;
+	}
+
+	for(unsigned i = 0;i < ASize;i++){
 #pragma HLS UNROLL
-				for(unsigned b = 0;b < Depth;b++){
+		for(unsigned j = 0;j < Depth;j++){
 #pragma HLS UNROLL
-					if(b == 0)
-						A[a][Depth-1] = activation((a*Depth+a+1)*ABit-1,(a*Depth+a)*ABit);
-					else
-						A[a][b-1] = activation((a*Depth+(a+b)%Depth+1)*ABit-1,(a*Depth+(a+b)%Depth)*ABit);
-					// cout << A[i][j] << ' ';
-				}
-				// cout << endl;
+			A[i][j] = activation((i*Depth+j+1)*ABit-1,(i*Depth+j)*ABit);
+			// cout << A[i][j] << ' ';
+		}
+		// cout << endl;
+	}
+
+	for(unsigned i = 0;i < ASize;i++)
+#pragma HLS UNROLL
+		for(unsigned j = 0;j < WSize;j++)
+#pragma HLS UNROLL
+			O[i][j] = 0;
+
+	for(unsigned k = 0;k < Depth;k++){
+#pragma HLS PIPELINE II = 1
+		for(unsigned i = 0;i < ASize;i++){
+#pragma HLS UNROLL
+			for(unsigned j = 0;j < WSize;j++){
+#pragma HLS UNROLL
+				ap_int<MBit> tmp = A[i][k]*W[j][k];
+#pragma HLS resource variable=tmp core=Mul_LUT
+				O[i][j] += tmp;
 			}
 		}
-		else if(i == Depth -1){
-			for(unsigned j = 0; j < ASize; j++){
+	}
+
+	ap_int<MBit*ASize*WSize> o;
+	for(unsigned c = 0; c < WSize; c++){
 #pragma HLS UNROLL
-				for(unsigned k = 0; k < WSize;k++){
+		for(unsigned d = 0; d < ASize; d++){
 #pragma HLS UNROLL
-					ap_int<MBit> tem = W[k][j] * A[j][k];
-#pragma HLS resource variable=tem core=Mul_LUT
-					o((k*ASize+j+1)*MBit-1,(k*ASize+j)*MBit) = O[j][k]+tem;
-				}
-			}
-		}
-		else{
-			for(unsigned j = 0; j < ASize; j++){
-#pragma HLS UNROLL
-				for(unsigned k = 0; k < WSize;k++){
-#pragma HLS UNROLL
-					ap_int<MBit> tem = W[k][j] * A[j][k];
-#pragma HLS resource variable=tem core=Mul_LUT
-					O[j][k] = O[j][k] +tem;
-				}
-			}
-			for(unsigned j = 0;j < ASize;j++){
-#pragma HLS UNROLL
-				ap_uint<ABit> ATemp = A[j][0];
-				for(unsigned d = 0;d < Depth-1;d++){
-#pragma HLS UNROLL
-					A[j][d] = A[j][d+1];
-				}
-				A[j][Depth-1] = ATemp;
-			}
-			for(unsigned k = 0;k < WSize;k++){
-#pragma HLS UNROLL
-				ap_int<WBit> WTemp = W[k][0];
-				for(unsigned d = 0;d < Depth-1;d++){
-#pragma HLS UNROLL
-					W[k][d] = W[k][d+1];
-				}
-				W[k][Depth-1] = WTemp;
-			}
+			o((c*ASize+d+1)*MBit-1,(c*ASize+d)*MBit) = O[d][c];
 		}
 	}
 	return o;
 }
-
 
 template<unsigned Depth,unsigned ASize,unsigned WSize,unsigned ABit,unsigned WBit,unsigned MBit>
 ap_int<MBit*ASize*WSize> Normal_Gemm(ap_uint<ABit*ASize*Depth> activation,ap_int<WBit*WSize*Depth> weight){
@@ -350,6 +408,68 @@ ap_int<MBit*ASize*WSize> Normal_Gemm(ap_uint<ABit*ASize*Depth> activation,ap_int
 	}
 //	cout << o << endl;
 	return o;
+}
+
+template<unsigned Depth,unsigned ASize,unsigned WSize,unsigned ABit,unsigned WBit,unsigned MBit>
+void Normal_GemmAdd(ap_uint<ABit*ASize*Depth> activation,ap_int<WBit*WSize*Depth> weight,ap_int<MBit*ASize*WSize>& added){
+#pragma HLS latency max = 1
+	ap_int<WBit> W[WSize][Depth];
+	ap_uint<ABit> A[ASize][Depth];
+	ap_int<MBit> O[ASize][WSize];
+#pragma HLS array_partition variable=W complete
+#pragma HLS array_partition variable=A complete
+#pragma HLS array_partition variable=O complete
+
+	for(unsigned i = 0;i < WSize;i++){
+#pragma HLS UNROLL
+		for(unsigned j = 0;j < Depth;j++){
+#pragma HLS UNROLL
+			W[i][j] = weight((i*Depth+j+1)*WBit-1,(i*Depth+j)*WBit);
+			// cout << W[i][j] << ' ';
+		}
+		// cout << endl;
+	}
+
+	for(unsigned i = 0;i < ASize;i++){
+#pragma HLS UNROLL
+		for(unsigned j = 0;j < Depth;j++){
+#pragma HLS UNROLL
+			A[i][j] = activation((i*Depth+j+1)*ABit-1,(i*Depth+j)*ABit);
+			// cout << A[i][j] << ' ';
+		}
+		// cout << endl;
+	}
+
+	for(unsigned i = 0;i < ASize;i++)
+#pragma HLS UNROLL
+		for(unsigned j = 0;j < WSize;j++)
+#pragma HLS UNROLL
+			O[i][j] = added((i*WSize+j+1)*MBit-1,(i*WSize+j)*MBit);;
+
+	for(unsigned i = 0;i < ASize;i++){
+#pragma HLS UNROLL
+		for(unsigned j = 0;j < WSize;j++){
+#pragma HLS UNROLL
+			for(unsigned k = 0;k < Depth;k++){
+#pragma HLS UNROLL
+				ap_int<MBit> tmp = A[i][k]*W[j][k];
+#pragma HLS resource variable=tmp core=Mul_LUT
+				O[i][j] += tmp;
+			}
+		}
+	}
+
+	ap_int<MBit*ASize*WSize> o;
+	for(unsigned c = 0; c < WSize; c++){
+#pragma HLS UNROLL
+		for(unsigned d = 0; d < ASize; d++){
+#pragma HLS UNROLL
+			added((c*ASize+d+1)*MBit-1,(c*ASize+d)*MBit) = O[d][c];
+//			cout << O[c][d] << " ";
+		}
+//		cout << endl;
+	}
+//	cout << o << endl;
 }
 
 template<unsigned Depth,unsigned ASize,unsigned WSize,unsigned ABit,unsigned WBit,unsigned MBit>
@@ -1221,7 +1341,7 @@ void Conv_MulAct_Normal_Gemm(hls::stream<ap_uint<Batch*ABit*KSize*KSize> >& in,h
 
 
 template<unsigned Batch,unsigned KSize,unsigned WBit,unsigned ABit,unsigned MBit,unsigned InChannel,unsigned OutChannel,unsigned Stride,unsigned Size,unsigned InP,unsigned MidP,unsigned OutP>
-void Conv_MulAct_Normal(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<ap_uint<Batch*ABit*OutP> >& out,const ap_int<WBit*MidP*InP> Weight[KSize*KSize][OutChannel/MidP][InChannel/InP],const ap_int<WBit> Bias[OutChannel],const unsigned Scale,unsigned reps = 1){
+void Conv_MulAct_Normal(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<ap_uint<Batch*ABit*OutP> >& out,const ap_int<WBit*KSize*KSize> Weight[OutChannel][InChannel],const ap_int<WBit> Bias[OutChannel],const unsigned Scale,unsigned reps = 1){
 	assert(InChannel%InP == 0);
 	assert(OutChannel%OutP == 0);
 	assert(OutChannel%MidP == 0);
@@ -1248,27 +1368,30 @@ void Conv_MulAct_Normal(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<ap
 				}
 			}
 			LoopInPack:for(unsigned ipack = 0;ipack < InPack;ipack++){
-				ap_uint<ABit> act[InP][Batch][Depth];
-				ap_int<WBit> wei[InP][MidP];
+				ap_uint<ABit> act[InP][Batch];
+				ap_int<WBit*KSize*KSize> wei[InP][MidP];
 #pragma HLS array_partition variable=act complete
 #pragma HLS array_partition variable=wei complete
 				for(unsigned mpack = 0;mpack < MidPack;mpack++){
+					for(unsigned inp = 0;inp < InP;inp++){
+#pragma HLS UNROLL
+						unsigned NInChannel = ipack * InP + inp;
+						ap_int<MBit*Batch*MidP> res;
+						for(unsigned midp = 0;midp < MidP;midp++){
+#pragma HLS UNROLL
+							unsigned NOutChannel = mpack * MidP + midp;
+							wei[inp][midp] = Weight[NOutChannel][NInChannel];
+						}
+					}
 					for(unsigned depth = 0;depth < Depth;depth++){
 #pragma HLS PIPELINE II = 1
-						for(unsigned inp = 0;inp < InP;inp++){
-#pragma HLS UNROLL
-							for(unsigned midp = 0;midp < MidP;midp++){
-#pragma HLS UNROLL
-								wei[inp][midp] = Weight[depth][mpack][ipack]((inp*MidP+midp+1)*WBit-1,(inp*MidP+midp)*WBit);
-							}
-						}
 						if(mpack == 0){
 							ap_uint<Batch*ABit*InP> InTemp = in.read();
 							for(unsigned inp = 0;inp < InP;inp++){
 #pragma HLS UNROLL
 								for(unsigned batch = 0;batch < Batch;batch++){
 #pragma HLS UNROLL					
-									act[inp][batch][depth] = InTemp((inp*Batch+batch+1)*ABit-1,(inp*Batch+batch)*ABit);
+									act[inp][batch] = InTemp((inp*Batch+batch+1)*ABit-1,(inp*Batch+batch)*ABit);
 								}
 							}
 						}
@@ -1279,10 +1402,10 @@ void Conv_MulAct_Normal(hls::stream<ap_uint<Batch*ABit*InP> >& in,hls::stream<ap
 								for(unsigned midp = 0;midp < MidP;midp++){
 #pragma HLS UNROLL
 									unsigned OutChan = mpack*MidP + midp;
-									ap_int<WBit> W_now = wei[inp][midp];
+									ap_int<WBit> W_now = wei[inp][midp]((depth+1)*WBit-1,depth*WBit);
 									// if(i == 0 && batch == 0)
 										// cout << OutChan << " " << depth << " " << inp << " " << batch << " " << act[inp][batch][depth] << " " << W_now << endl;
-									ap_int<MBit> ResTemp = act[inp][batch][depth]*W_now;
+									ap_int<MBit> ResTemp = act[inp][batch]*W_now;
 #pragma HLS resource variable=ResTemp core=Mul_LUT
 									MidArray[OutChan*Batch+batch] += ResTemp;
 								}
@@ -1349,7 +1472,7 @@ void ConvLayer_NOPAD_Orbital_New(hls::stream<ap_uint<Batch*InP*ABit> >& in,hls::
 }
 
 template<unsigned Batch,unsigned KSize,unsigned Size,unsigned InChannel,unsigned OutChannel,unsigned InP,unsigned MidP_i,unsigned MidP_o,unsigned OutP,unsigned Stride,unsigned WBit,unsigned ABit,unsigned MBit>
-void ConvLayer_NOPAD_Normal(hls::stream<ap_uint<Batch*InP*ABit> >& in,hls::stream<ap_uint<Batch*OutP*ABit> >& out,const ap_int<WBit*MidP_o*MidP_i> Weight[KSize*KSize][OutChannel/MidP_o][InChannel/MidP_i],const ap_int<WBit> Bias[OutChannel],const unsigned Scale,unsigned reps = 1){
+void ConvLayer_NOPAD_Normal(hls::stream<ap_uint<Batch*InP*ABit> >& in,hls::stream<ap_uint<Batch*OutP*ABit> >& out,const ap_int<WBit*KSize*KSize> Weight[OutChannel][InChannel],const ap_int<WBit> Bias[OutChannel],const unsigned Scale,unsigned reps = 1){
 #pragma HLS DATAFLOW
 	assert(InChannel%InP == 0);
 	assert(OutChannel%OutP == 0);
