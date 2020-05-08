@@ -1,10 +1,13 @@
-//#define AP_INT_MAX_W 2048
+#define AP_INT_MAX_W 8192
 #include "config.h"
 #include <hls_stream.h>
-#include "../../nn-h/FcnnLayer.h"
+#include <assert.h>
+//#include "../../nn-h/FcnnLayer.h"
 #include "../../nn-h/util.h"
-#include "../../nn-h/conv.h"
+//#include "../../nn-h/conv.h"
 #include "../../nn-h/pooling.h"
+#include "../../nn-h/conv_systolic.h"
+#include "../../nn-h/FcnnLayer_systolic.h"
 using namespace std;
 
 struct ap_axis{
@@ -12,10 +15,10 @@ struct ap_axis{
 	ap_int<1> last;
 	ap_int<16> keep;
 };
-
 void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1);
-int test_top(){
-	ap_uint<ABIT*C1_INCHANNEL> IMG1[C1_INCHANNEL][C1_SIZE][C1_SIZE] =
+void topTest(){
+	unsigned Batch = 4;
+	ap_uint<8> IMG[2][C1_SIZE][C1_SIZE] =
 	{{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -43,10 +46,8 @@ int test_top(){
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}};
-
-ap_uint<ABIT*C1_INCHANNEL> IMG2[C1_INCHANNEL][C1_SIZE][C1_SIZE] =
-	{{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}},
+	{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0},
@@ -80,47 +81,26 @@ ap_uint<ABIT*C1_INCHANNEL> IMG2[C1_INCHANNEL][C1_SIZE][C1_SIZE] =
 
 	ap_axis temp;
 
-	for(int i = 0; i < C1_INCHANNEL;i++){
-		for(int j = 0; j < 56;j++){
+	for(int rep = 0;rep < 2;rep++){
+	for(int j = 0; j < 56;j++){
+		for(int bat = 0;bat < Batch;bat++){
 			for(int k = 0; k < 14;k++){
 				int a = j/2;
 				int b = (j%2)*14+k;
-				temp.data((k+1)*8-1,k*8) = IMG1[i][a][b];
-//				temp.data((k+1)*8-1,k*8) = a+b;
+				temp.data((k+1)*8-1,k*8) = IMG[bat%2][a][b];
+//				temp.data((k+1)*8-1,k*8) = k%3;
 				temp.keep(k,k) = 1;
-				if(j != 56-1){
-					temp.last = 0;
-				}
-				else{
-					temp.last = 0;
-				}
 			}
 			in.write(temp);
 		}
 	}
-	for(int i = 0; i < C1_INCHANNEL;i++){
-		for(int j = 0; j < 56;j++){
-			for(int k = 0; k < 14;k++){
-				int a = j/2;
-				int b = (j%2)*14+k;
-				temp.data((k+1)*8-1,k*8) = IMG2[i][a][b];
-				temp.keep(k,k) = 1;
-				if(j != 56-1){
-					temp.last = 0;
-				}
-				else{
-					temp.last = 1;
-				}
-			}
-			in.write(temp);
-		}
 	}
 
 
 
 	top(in,out,2);
-
-	for(int i = 0;i < 2;i++){
+	for(int rep = 0;rep < 2;rep++){
+	for(int i = 0;i < 10;i++){
 		ap_axis OTemp = out.read();
 		for(int j = 0; j < 16;j++){
 			ap_uint<ABIT> q1 = OTemp.data((j+1)*8-5,j*8);
@@ -128,18 +108,63 @@ ap_uint<ABIT*C1_INCHANNEL> IMG2[C1_INCHANNEL][C1_SIZE][C1_SIZE] =
 		}
 		cout << endl;
 	}
-
-//		for(int i = 0;i < 28;i++){
-//			ap_axis OTemp = out.read();
-//			for(int i = 0; i < 28;i++){
-//				ap_uint<ABIT> q = OTemp.data((i+1)*ABIT-1,i*ABIT);
-//				cout << q << " ";
-//			}
-//			cout << endl;
-//		}
+	}
 }
 
 int main(){
-	test_top();
-	//test();
+	// ConvStreamGenerator_Batch_Test();
+	// ConvLayer_NoPad_Orbital_Test();
+//	ap_uint<4> a[4][5] = {{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1}};
+//	ap_uint<4> w[4][5] = {{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1}};
+//	ap_uint<4*5*4> act;
+//	ap_uint<4*5*4> wei;
+//	for(int i = 0;i < 4;i++){
+//		for(int j = 0;j < 5;j++){
+//			act((i*5+j+1)*4-1,(i*5+j)*4) = a[i][j];
+//			wei((i*5+j+1)*4-1,(i*5+j)*4) = w[i][j];
+//		}
+//	}
+//	ap_uint<4*4*4>res = Orbital_Gemm<5,4,4,4,4,8>(act,wei);
+//	for(int i = 0;i < 4;i++){
+//		for(int j = 0;j < 4;j++){
+//			ap_int<8> tmp = res((i*4+j+1)*8-1,(i*4+j)*8);
+//			cout << tmp << " ";
+//		}
+//		cout << endl;
+//	}
+	topTest();
 }
+
+
+
+//void Total_Transform(){
+//	const unsigned WBit = 8;
+//	const unsigned KSize = 3;
+//	const unsigned OutChannel1 = 16;
+//	const unsigned InChannel1 = 1;
+//	const unsigned OutChannel2 = 32;
+//	const unsigned InChannel2 = 16;
+//	const unsigned OutChannel3 = 64;
+//	const unsigned InChannel3 = 32;
+//	const unsigned OutChannel4 = 64;
+//	const unsigned InChannel4 = 64;
+//	ap_int<WBit*KSize*KSize> OutWeight1[OutChannel1][InChannel1];
+//	trans_orbital<InChannel1,OutChannel1,KSize,WBit>(L1_Wei,OutWeight1);
+//	cout << "L1" << endl;
+//	cout_weight<WBit*KSize*KSize,OutChannel1,InChannel1>(OutWeight1);
+//
+//	ap_int<WBit*KSize*KSize> OutWeight2[OutChannel2][InChannel2];
+//	trans_orbital<InChannel2,OutChannel2,KSize,WBit>(L2_Wei,OutWeight2);
+//	cout << "L2" << endl;
+//	cout_weight<WBit*KSize*KSize,OutChannel2,InChannel2>(OutWeight2);
+//
+//	ap_int<WBit*KSize*KSize> OutWeight3[OutChannel3][InChannel3];
+//	trans_orbital<InChannel3,OutChannel3,KSize,WBit>(L3_Wei,OutWeight3);
+//	cout << "L3" << endl;
+//	cout_weight<WBit*KSize*KSize,OutChannel3,InChannel3>(OutWeight3);
+//
+//	ap_int<WBit*KSize*KSize> OutWeight4[OutChannel4][InChannel4];
+//	trans_orbital<InChannel4,OutChannel4,KSize,WBit>(L4_Wei,OutWeight4);
+//	cout << "L4" << endl;
+//	cout_weight<WBit*KSize*KSize,OutChannel4,InChannel4>(OutWeight4);
+//}
