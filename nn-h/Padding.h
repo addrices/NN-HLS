@@ -14,7 +14,7 @@ void ZeroPad(					//add padding to image
 	hls::stream<ap_uint<InChannel*Ibit> >& in,
 	hls::stream<ap_uint<InChannel*Ibit> >& out)
 {
-	cout << TopLeftPad << "BR" << BottomRightPad << endl;
+	// cout << TopLeftPad << "BR" << BottomRightPad << endl;
 	const unsigned OutH = (MatrixH+TopLeftPad+BottomRightPad);
 	const unsigned OutW = (MatrixW+TopLeftPad+BottomRightPad);
 	ap_uint<InChannel*Ibit> temp_out = 0;
