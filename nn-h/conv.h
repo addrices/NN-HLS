@@ -22,7 +22,6 @@ ap_int<MBit> Dot(ap_int<P*WBit> weights,ap_int<P*ABit> in){
 		ap_int<WBit> temp_w = weights( (p+1)*WBit-1, p*WBit );
 		ap_uint<ABit> temp_in = in( (p+1)*ABit-1, p*ABit );
 		result = temp_w * temp_in;
-#pragma HLS resource variable=result core=Mul_LUT
 		acc += result;
 	}
 	return acc;

@@ -19,11 +19,11 @@ BD_FILE := $(SRC_DIR)/design_1.bd
 
 hls_proj:$(NN_H_FILE) $(SRC_FILE) $(HLS_PROJ_SCRIPT)
 	@mkdir -p $(OUT_DIR)
-	@cd $(OUT_DIR) && vivado_hls -f $(HLS_PROJ_SCRIPT)
+	@cd $(OUT_DIR) && vitis_hls -f $(HLS_PROJ_SCRIPT)
 
 hls_ip:$(NN_H_FILE) $(SRC_FILE) $(HLS_IP_SCRIPT)
 	@mkdir -p $(OUT_DIR)
-	@cd $(OUT_DIR) && vivado_hls -f $(HLS_IP_SCRIPT)
+	@cd $(OUT_DIR) && vitis_hls -f $(HLS_IP_SCRIPT)
 
 
 viv_pro:hls_ip

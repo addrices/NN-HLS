@@ -119,9 +119,9 @@ void MaxPooling_Run(hls::stream<ap_uint<IOBit*InP> >& in, hls::stream<ap_uint<IO
 		for(unsigned i = 0;i < Packs;i++){
 			for(unsigned j = 0;j < WinSize*WinSize;j++){
 				for(unsigned k = 0;k < InPack;k++){
-	#pragma HLS PIPELINE II = 1
 					InTemp = in.read();
 					for(unsigned l = 0; l < InP;l++){
+#pragma HLS UNROLL
 						unsigned NChannel = k*InP+l;
 						PoolVec[NChannel][j] = InTemp((l+1)*IOBit-1,l*IOBit);
 					}
@@ -129,6 +129,7 @@ void MaxPooling_Run(hls::stream<ap_uint<IOBit*InP> >& in, hls::stream<ap_uint<IO
 			}
 			for(unsigned w = 0;w < OutPack;w++){
 				for(unsigned e = 0;e < OutP;e++){
+#pragma HLS UNROLL
 					unsigned NChannel = w * OutP+e;
 					OutTemp((e+1)*IOBit-1,e*IOBit) = Max<WinSize*WinSize,IOBit>(PoolVec[NChannel]);
 				}

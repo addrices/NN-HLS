@@ -83,7 +83,6 @@ void FcnnLayer_ScaleBit_IOP(hls::stream<ap_uint<ABit*InPix> >& in,hls::stream<ap
 							unsigned Rout_Offset = n+b;
 							ap_uint<ABit> Rin_P = Rin((Rin_Offset+1)*ABit-1,Rin_Offset*ABit);
 							ap_uint<MBit> tem = Weight[Rout_Offset][i+Rin_Offset] * Rin_P;
-#pragma HLS resource variable=tem core=Mul_LUT
 							result[Rout_Offset] += tem;
 						}
 					}

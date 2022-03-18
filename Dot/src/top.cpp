@@ -173,7 +173,7 @@ void top(hls::stream<ap_axis >& in,hls::stream<ap_axis >& out,unsigned reps = 1)
 
 	hls::stream<ap_uint<Batch*F6_OUTPIX*8> > res8_str;
 	EleExtend<F6_OUTPIX*Batch,ABIT,8,10>(F6_out,res8_str,reps);
-				//1    * 4
+
 	ExtendStreamWidth_Length<Batch*F6_OUTPIX*8,128,10>(res8_str,tout,reps);
 	AddLast<10>(tout,out,reps);
 	return;
