@@ -12,4 +12,8 @@ open_solution "solution1" -flow_target vivado
 set_part {xc7a100tcsg324-1}
 create_clock -period 10 -name default
 config_interface -m_axi_addr64=0
+csim_design
+csynth_design
+cosim_design
+export_design -format ip_catalog
 exit

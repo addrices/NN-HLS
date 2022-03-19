@@ -9,24 +9,23 @@ SRC_FILE := $(SRC_DIR)/top.cpp
 SRC_TEST_FILE := $(SRC_DIR)/test.cpp
 
 HLS_PROJ_SCRIPT := $(LOCAL)/script/create_hlspro.tcl
-HLS_IP_SCRIPT := $(LOCAL)/script/make_ip.tcl
 VIVADO_PROJ_SCRIPT := $(LOCAL)/script/create_vivado.tcl
 HLS_PROJ_NAME := HLS_proj
+HLS_PROJ := $(OUT_DIR)/$(HLS_PROJ_NAME)
+VIV_PROJ := $(OUT_DIR)/vivado_proj
 
 BD_DIR := $(OUT_DIR)/bd
 BD_FILE := $(SRC_DIR)/design_1.bd
 
+hls_proj:$(HLS_PROJ)
 
-hls_proj:$(NN_H_FILE) $(SRC_FILE) $(HLS_PROJ_SCRIPT)
+$(HLS_PROJ):$(NN_H_FILE) $(SRC_FILE) $(HLS_PROJ_SCRIPT)
 	@mkdir -p $(OUT_DIR)
 	@cd $(OUT_DIR) && vitis_hls -f $(HLS_PROJ_SCRIPT)
 
-hls_ip:$(NN_H_FILE) $(SRC_FILE) $(HLS_IP_SCRIPT)
-	@mkdir -p $(OUT_DIR)
-	@cd $(OUT_DIR) && vitis_hls -f $(HLS_IP_SCRIPT)
+viv_proj:$(VIV_PROJ)
 
-
-viv_pro:hls_ip
+$(VIV_PROJ):$(HLS_PROJ)
 	@mkdir -p $(BD_DIR)
 	@cp $(BD_FILE) $(BD_DIR)
 	@cd $(OUT_DIR) && vivado -mode batch -source $(VIVADO_PROJ_SCRIPT)

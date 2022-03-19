@@ -12,7 +12,11 @@ add_files $hls_src/top.cpp
 add_files -tb $hls_src/test.cpp
 
 open_solution -reset "solution1"
-# set_part {xc7z020clg400-1} -tool vivado
+set_part {xc7z020clg400-1}
 create_clock -period 10 -name default
+#source "./HLS_pro/solution1/directives.tcl"
+csim_design
+csynth_design
+export_design -format ip_catalog
 
 exit
