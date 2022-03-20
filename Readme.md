@@ -176,6 +176,14 @@ template说明
 
 计算核大小为Batch*Depth
 
+## 量化网络
+
+在\quanCNN，运行CNN.py训练MNIST手写数字识别网络，其会保存
+
+再打开jupyter打开QCNN.ipynb，运行生成保存了权重的中间文件。
+
+最后使用trans.py将权重转化成对应的硬件配置的数组形状写入对应的config.h文件中。（注意Dot实现的Conv和Gemm实现的Conv的Weight形状不同，这是因为他们在计算时的数据流不同，权重需要按顺序存放使得其能够适应计算过程中的访存需求。）
+
 ## pynq
 
 PYNQ的deploy文件好像坏了，手上暂时没有pynq板子，先跑不了。

@@ -52,7 +52,6 @@
 #define C4_MIDP_I 1
 #define C4_MIDP_O 2
 #define C4_OUTP 4
-#define C4_OUTP 4
 #define C4_SCALEBIT 8
 #define C4_STRIDE 1
 //4*2*9 72
