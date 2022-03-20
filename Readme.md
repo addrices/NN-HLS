@@ -68,6 +68,10 @@ int top(ap_uint<32> *in){
 ```
 加速器中的数据以流的形式进入，并一层一层的流过HLS实现的加速模块，nn-h文件夹中提供了CNN的基本组件，只需要将正确size的数据流传入各个函数中便能够得到结果。```#pragma HLS DATAFLOW```指示HLS将其中的各个模块设计成流水线的结构，层之间的HLS::stream将会被设计成FIFO在各个层之间连接。
 
+每一层的输入输出stream的layout都是\[H\]\[W\]\[channel/Inp\]\[InP(OutP)\]\[Batch\]，注意Stream的写入读入顺序。
+
+Conv和Fullconnect的参数中都有Scale这一项，是因为激活值和权重值在量化时做了相同放大（为了硬件结构实现简单，量化均采用2的幂次放大缩小），而乘法操作会使得其结果放大了2*scale项，所以在每一层的输出处需要右移对应的scale位。
+
 ### 各个函数的说明情况
 
 #### conv
@@ -171,8 +175,6 @@ template说明
 | Depth   | 计算核矩阵乘的深度     |
 
 计算核大小为Batch*Depth
-
-
 
 ## pynq
 
